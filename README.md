@@ -13,11 +13,11 @@ stated next to it.
 Contents are being added through reviewed pull requests. Every version, license and default is
 dated and linked to the source it was read from.
 
-- `models/`: runtimes and open models by hardware (CPU only, NVIDIA, AMD, integrated graphics).
-- `classifiers/`: a small local model that picks one option from a list, for routing and triage.
-- `search/`: private document search and question answering over your own files.
-- `pii/`: detecting, redacting and pseudonymizing personal information; local speech and OCR.
-- `advisers.md`: notes for regulated firms (for example SEC-registered investment advisers) on what
+- [`models/`](models/README.md): runtimes and open models by hardware (CPU only, NVIDIA, AMD, integrated graphics).
+- [`classifiers/`](classifiers/README.md): a small local model that picks one option from a list, for routing and triage.
+- [`search/`](search/README.md): private document search and question answering over your own files.
+- [`pii/`](pii/README.md): detecting, redacting and pseudonymizing personal information; local speech and OCR.
+- [`advisers.md`](advisers.md): notes for regulated firms (for example SEC-registered investment advisers) on what
   a local-first setup helps with and what it does not. Not legal advice.
 
 MIT licensed. Third-party projects keep their own licenses; read each one before you use it.

@@ -64,6 +64,24 @@ check `datalab.to/pricing` before relying on the $5M threshold. [UNVERIFIED whet
 - **What is known about network behavior:** a one-time weight download from the Hugging Face Hub on
   first run. Pre-cache and set `HF_HUB_OFFLINE=1` afterward. Telemetry default: unknown for all six.
 
+**Scanned PDFs are where private files leak.** A scanned PDF has no text layer, so a text extractor
+returns nothing. In one random sample of 288 distinct personal PDFs, 272 had a text layer, 15 had none and 1 timed out, so about 5% needed OCR. Some agent
+tools lean on a hosted model for those files: `coworker/pdf_support.py` in
+[andrewyng/openworker](https://github.com/andrewyng/openworker) (read 2026-09-26) has no OCR path,
+and its note for an image-only PDF says "A model with native PDF support (Claude, GPT, Gemini) can
+read it." That is fine for public files. For a private one it is the step that sends the whole
+document off the machine. OCR locally instead (Tesseract and the tools in [pii](../pii/README.md)).
+Two rules keep the search honest afterward:
+
+- **Record a file extraction could not read as unread, never as empty.** Encrypted, corrupt,
+  timed-out and OCR-read-nothing files are still unsearched. Collapse them into "no text" and a
+  search reports a clean zero over files nobody opened.
+- **Flag a partial OCR.** If you cap OCR at some number of pages, mark the record partial; a
+  400-page file read to page 30 otherwise looks fully searched.
+
+Keying the extracted-text cache by content hash rather than path means one document stored in two
+folders is extracted once, and an edited file is re-extracted without any invalidation logic.
+
 ## 3. Embedding models
 
 Data from the Hugging Face API, read 2026-09-24. These are model weights, so the license column is

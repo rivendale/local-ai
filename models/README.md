@@ -12,7 +12,7 @@ into it, so every model below has its own license line.
 | Runtime | Code license | Platforms | Telemetry and network default | Activity (last push read 2026-09-24) |
 |---|---|---|---|---|
 | [llama.cpp](https://github.com/ggml-org/llama.cpp) | MIT | Linux, Windows, macOS, more; CPU, CUDA, Metal, Vulkan, ROCm/HIP, SYCL backends | None. It is a library and command line tool; no phone-home code found (a code reading, 2026-09-24). | 2026-09-24, active |
-| [Ollama](https://github.com/ollama/ollama) | MIT | macOS and Windows apps per its FAQ; other platforms not read | Its [FAQ](https://github.com/ollama/ollama/blob/main/docs/faq.mdx) (read 2026-09-24) says "Ollama runs locally. We don't see your prompts or data when you run locally." But it also has cloud-hosted models and web search, and a model pulled from the cloud catalog would send prompts to Ollama's service. **Required setup step: turn on local-only mode** with `"disable_ollama_cloud": true` in `~/.ollama/server.json`, or `OLLAMA_NO_CLOUD=1`. The macOS and Windows apps download updates automatically. Pulling a model contacts ollama.com's registry (or Hugging Face for `hf.co/` names). | Not recorded |
+| [Ollama](https://github.com/ollama/ollama) | MIT | macOS and Windows apps per its FAQ; other platforms not read | Its [FAQ](https://github.com/ollama/ollama/blob/main/docs/faq.mdx) (read 2026-09-24) says "Ollama runs locally. We don't see your prompts or data when you run locally." But it also has cloud-hosted models and web search, and a model pulled from the cloud catalog would send prompts to Ollama's service. **Required setup step: turn on local-only mode** with `"disable_ollama_cloud": true` in `~/.ollama/server.json`, or `OLLAMA_NO_CLOUD=1`. The macOS and Windows apps download updates automatically. Pulling a model contacts ollama.com's registry (or Hugging Face for `hf.co/` names). | 2026-09-26 (read that day), active; latest release v0.34.4 on 2026-09-23 |
 | [vLLM](https://github.com/vllm-project/vllm) | Apache-2.0 | Linux-first server; NVIDIA natively | **On by default:** anonymous usage stats (hardware and model configuration). Turn off with `VLLM_NO_USAGE_STATS=1` or `DO_NOT_TRACK=1`, or create the file `~/.config/vllm/do_not_track`. [Docs](https://docs.vllm.ai/en/latest/usage/usage_stats.html), read 2026-09-24. | 2026-09-24, active |
 | [LM Studio](https://lmstudio.ai/app-terms) | Proprietary. Free for personal and business use per its terms; source is closed. | Desktop app | Its [privacy policy](https://lmstudio.ai/app-privacy) says chats, history and documents are not transmitted and there is no usage telemetry. Model search and download, update checks, and IP plus basic device information via its CDN do leave the machine. | Closed source, not measurable |
 
@@ -72,6 +72,43 @@ The maintainer ran this on 2026-09-24 (Ollama 0.34.3, Windows, RX 6700 XT 12 GB)
 For a shared GPU server, vLLM's opt-out is `VLLM_NO_USAGE_STATS=1` (see the table). Its launch
 command was not read for this repo, so follow the vLLM docs.
 
+### Reasoning models: turn thinking off for labels
+
+Qwen3.5 and other reasoning models think before they answer, and Ollama leaves thinking on unless
+the request says `"think": false`. For a label, a route or an extraction, the thinking is pure
+latency. The maintainer measured it on 2026-09-26 (Ollama 0.34.3, Windows, RX 6700 XT,
+`qwen3.5:9b-q4_K_M`, a synthetic phishing email, temperature 0, three calls each after a warm-up):
+
+| Request | Wall time | Tokens generated | Answer |
+|---|---|---|---|
+| Thinking on (the default) | 10.6 to 10.7 s | 533 | `{"label": "phishing"}` |
+| `"think": false` | 0.22 to 0.25 s | 8 | `{"label": "phishing"}` |
+
+Same answer, more than 40 times faster. Generation ran at 50 to 63 tokens per second either way; the
+difference is the 525 thinking tokens. The first call of a session added 12.0 s of model load.
+
+Two cautions from the same machine:
+
+- **Thinking off costs accuracy on arithmetic.** Ten synthetic three-number sums, same model, same
+  day: one wrong with thinking off, none wrong with it on. In a separate five-task check on
+  2026-09-24, both 9B models tried got a three-number sum wrong. Let the model extract the numbers
+  and compute them in code.
+- **When a local model looks slow, split the time before blaming the hardware.** Ollama's
+  `/api/chat` and `/api/generate` replies include `load_duration`, `prompt_eval_count`,
+  `prompt_eval_duration`, `eval_count` and `eval_duration` (durations in nanoseconds). One call
+  shows whether the time went to loading, reading the prompt or generating. A large `eval_count`
+  for a short answer means thinking was on.
+
+### Starting without a sign-in (Windows)
+
+On the maintainer's Windows install, checked 2026-09-26, the only autostart for Ollama was a
+shortcut the installer placed in the user's Startup folder: `sc query ollama` reported no such
+service, and no scheduled task named it. A Startup-folder shortcut runs at interactive sign-in, so
+after an unattended reboot (an overnight update, a power cut) the model is down until someone signs
+in. Do not put a scheduled job on top of it without something that starts it before sign-in, such
+as a scheduled task set to run whether or not the user is signed in. [UNVERIFIED: that task was not
+built or tested for this repo.]
+
 ## 2. Models by hardware
 
 Current releases, from the Hugging Face API, read 2026-09-24:
@@ -86,9 +123,17 @@ Current releases, from the Hugging Face API, read 2026-09-24:
 | GLM-5.3-Flash (320B total, 18B active, MoE) | 2026-08-25 | MIT per its [model card](https://huggingface.co/zai-org/GLM-5.3-Flash), read 2026-09-24 |
 | GLM-4.7-Flash | 2026-01-19 | MIT |
 | gpt-oss-20b | 2025-08-04 | Apache-2.0 |
+| MiMo-V2.6-Distill-Qwen-9B (a fine-tune of Qwen3.5-9B; ggml-org publishes a GGUF) | 2026-09-21 | MIT per its Hugging Face tags, read 2026-09-26 |
 
 The [Qwen3.8-27B card](https://huggingface.co/Qwen/Qwen3.8-27B) (read 2026-09-24) describes a 27B
 dense model with a 262,144-token native context.
+
+The maintainer compared [MiMo-V2.6-Distill-Qwen-9B](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B)
+at `Q8_0` with Qwen3.5-9B at `Q4_K_M` on 2026-09-24, on the RX 6700 XT: five hand-written tasks
+with answers written first (extraction, an exact reply, detecting a Social Security
+number, a three-fact summary, a sum). Each got 4 of 5, and both missed the sum. MiMo ran at 38 tokens
+per second against 56, partly because of its larger quantization. Five cases show no reason to
+switch; they do not rank the two.
 
 The newest Qwen and GLM generations did not show a small dense chat model except Qwen3.5-4B and
 9B from the previous generation. A leaderboard-based "best small model" check was not done
@@ -124,11 +169,14 @@ gfx1102 among others, and not gfx1031, which is this card's real target. The kno
 setting `HSA_OVERRIDE_GFX_VERSION=10.3.0`. One research source reports that ROCm 6.4.3 and later
 builds crash on gfx1031 and gfx1032 even with that override. [Reported, not reproduced here.]
 
-**So Vulkan is the realistic backend.** llama.cpp has a Vulkan backend, and Ollama's docs say a card
-outside its ROCm list falls back to its Vulkan path. Check the current Ollama GPU page for whether
-Vulkan needs to be switched on in your version. [UNVERIFIED] The maintainer ran Ollama 0.34.3 on
-Windows on this exact card on 2026-09-24 and got GPU-speed answers from a 4B model (see
-[classifiers](../classifiers/README.md)); which backend Ollama used was not recorded.
+**So Vulkan is the realistic backend, and on Windows it is the one Ollama uses.** llama.cpp has a
+Vulkan backend. [Ollama's GPU docs](https://docs.ollama.com/gpu) (read 2026-09-26) say its Windows
+ROCm path needs a ROCm 7 / HIP 7 driver stack and list only the RX 7600 and newer, and that Vulkan "is
+enabled by default when the backend is installed" (`OLLAMA_VULKAN=0` turns it off). Measured by the
+maintainer on 2026-09-26 with Ollama 0.34.3 on Windows and this card: the server log names
+`library=Vulkan` for the card and reports `offloaded 34/34 layers to GPU` for `qwen3.5:9b-q4_K_M`,
+`/api/ps` shows the whole 5.7 GB model in VRAM, and the log's config line reads `OLLAMA_VULKAN:true`
+with the variable unset in both the user and the system environment. Generation ran at 50 to 63 tokens per second.
 
 With 12 GB of VRAM and 62 GB of system RAM, partial offload is the pattern: the GPU holds as many
 layers as fit and the CPU holds the rest.
@@ -142,6 +190,65 @@ layers as fit and the CPU holds the rest.
 
 GLM-5.3-Flash (320B total) does not realistically fit 12 GB plus 62 GB at usable quality. Do not plan
 around it on this class of machine.
+
+**Prove which backend ran.** A model that silently falls back to the CPU still answers, only slower,
+so an answer is not proof. Three local checks:
+
+1. `curl http://127.0.0.1:11434/api/ps`: `size_vram` equal to `size` means the whole model is on
+   the GPU; anything less is a partial offload.
+2. The server log (on Windows, `%LOCALAPPDATA%\Ollama\server.log`): the `inference compute` line
+   names the library (`Vulkan`, `ROCm`, `CUDA`) and the card, and `offloaded N/M layers to GPU`
+   shows the split when the model loads.
+3. For other GPU software, time a heavy job on the CPU and on the GPU. A small job can take about
+   the same time on either (see the Blender figures below).
+
+**ROCm and CUDA translation on Windows, as of 2026-09-26.** Most PyTorch tools assume CUDA. For this
+card:
+
+- AMD's HIP SDK page still marks every RX 6000 card "Unsupported" (above).
+- [TheRock](https://github.com/ROCm/TheRock/blob/main/SUPPORTED_GPUS.md), AMD's development build of
+  ROCm, marks gfx1031 build passing, sanity tested and release ready on Windows (read 2026-09-26).
+  The same page says the project "is not yet stable for production use," and defines sanity tested
+  as "either in CI or some light form of manual QA."
+- [ComfyUI's README](https://github.com/comfyanonymous/ComfyUI) (read 2026-09-26) installs PyTorch
+  on Windows from AMD's multi-architecture ROCm 10.0 packages, says no separate HIP SDK is needed,
+  and lists RDNA 2 among supported architectures. Not tried on this card. [UNVERIFIED on RDNA2]
+- [ZLUDA](https://zluda.readthedocs.io/latest/), which runs CUDA programs on AMD GPUs, is at
+  v7-preview.11 (released 2026-09-22). Its docs say this version "will likely not work with your
+  application yet," and its Windows steps call for the HIP SDK.
+- A project that compiles its own CUDA kernels (TRELLIS.2 lists flash-attn and nvdiffrast, among
+  others) needs those kernels built for AMD too. A working PyTorch is not enough on its own.
+
+**WSL does not see this card for compute.** Measured 2026-09-26 in WSL2 with this card:
+`/dev/dxg` is present, `/dev/kfd` (the ROCm device) is not, and `vulkaninfo --summary` reports
+`llvmpipe`, a software renderer. Moving a GPU job into WSL moves it onto the CPU. Run the GPU work on
+the Windows side and call it from WSL. With WSL in mirrored networking mode, Ollama on the Windows
+side answers at `127.0.0.1:11434` from WSL. [UNVERIFIED in the default NAT mode]
+
+**Beyond language models on the same card:**
+
+| Job | Runs on the RX 6700 XT? | Evidence |
+|---|---|---|
+| Blender Cycles rendering | Yes, through HIP | The [Blender manual](https://docs.blender.org/manual/en/latest/render/cycles/gpu_rendering.html) (source read 2026-09-26) lists the RX 6000 series for HIP on Windows and Linux, with Radeon Software 24.9.1 or newer on Windows. Measured 2026-09-06 with Blender 5.2.1: a 1080x1080 scene at 512 samples took 28.7 s on the CPU (24 threads) and 9.3 s on HIP, 3.1x. A 480x480 scene at 64 samples took 2.16 s and 1.93 s, too close to tell a GPU run from a CPU fallback. GPU denoising needs an RX 7000 or newer on Windows (RX 6000 on Linux), so this card denoises on the CPU there. |
+| Image generation (PyTorch tools such as ComfyUI) | Unknown | See the ROCm notes above; not tried. ComfyUI's network defaults were not checked, so treat it like the unverified tools in section 1. |
+| Generative 3D (image or text to mesh) | No | The [TRELLIS.2 README](https://github.com/microsoft/TRELLIS.2) says it is tested only on Linux and needs an NVIDIA GPU with at least 24 GB. The [Hunyuan3D-2 README](https://github.com/Tencent-Hunyuan/Hunyuan3D-2) gives 6 GB for shape and 16 GB for shape plus texture, and its license excludes the EU, the UK and South Korea. Both read 2026-09-26. |
+
+Blender renders scene files, not private data, so its network defaults were not checked here. Three
+things about running it headless, from the [command-line arguments page](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html)
+(source read 2026-09-26) and the maintainer's runs:
+
+- **Pick the device on the command line, after `--`:**
+  `blender --background --factory-startup --python scene.py -- --cycles-device HIP`. The manual:
+  "Cycles add-on options must be specified following a double dash." Before the `--`, Blender reads
+  the flag as a file name.
+- **Do not list devices from a script on a machine that also has an Intel iGPU.** Reading
+  `preferences.addons["cycles"].preferences.devices` crashed Blender 5.2.1 with an access violation in
+  Intel's Level Zero loader, even with HIP selected first, because Cycles enumerates every backend
+  (2026-09-06). Selecting the device on the command line worked.
+- **Blender exits 0 when your script raises.** Measured with Blender 5.2.1 on 2026-09-26: a script
+  that only raised an exception returned 0. With `--python-exit-code 3` ahead of the script
+  argument it returned 3, and a clean script still returned 0. Check that the output file exists as
+  well: a script that runs cleanly and saves nothing looks most like success.
 
 ### NVIDIA, 12 GB and 24 GB
 
@@ -173,5 +280,7 @@ that as unproven. [UNVERIFIED]
 - No leaderboard check for the best small model.
 - On-disk GGUF sizes not read from files, except the Tev1 `Q6_K` figure.
 - License for Qwen3.8-Flash-Next not recorded.
+- ROCm on Windows (TheRock or AMD's PyTorch packages) and ZLUDA were not tried on an RDNA2 card.
+- Image generation was not tried on the AMD card.
 - Telemetry defaults for the tools in the unverified list are not confirmed.
 - Not legal advice; license summaries are readings of project pages.

@@ -13,7 +13,8 @@ stated next to it.
 Contents are being added through reviewed pull requests. Every version, license and default is
 dated and linked to the source it was read from.
 
-- [`models/`](models/README.md): runtimes and open models by hardware (CPU only, NVIDIA, AMD, integrated graphics).
+- [`models/`](models/README.md): runtimes and open models by hardware (CPU only, NVIDIA, AMD, integrated graphics),
+  what an AMD card without CUDA can and cannot run, and how to prove the GPU did the work.
 - [`classifiers/`](classifiers/README.md): a small local model that picks one option from a list, for routing and triage.
 - [`search/`](search/README.md): private document search and question answering over your own files.
 - [`pii/`](pii/README.md): detecting, redacting and pseudonymizing personal information; local speech and OCR.

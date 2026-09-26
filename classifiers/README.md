@@ -22,7 +22,11 @@ find personal information; see [pii](../pii/README.md) for that.
   person or a hard rule in the path.
 - Anything where a wrong answer would be silent. The model gives one letter with no confidence
   signal, and calibration is not established (below), so build the pipeline assuming some answers
-  are wrong and will look confident.
+  are wrong and will look confident. Asking a general chat model for a confidence number does not
+  fix this: the number is generated text, not a probability. In the maintainer's run on
+  2026-09-17, a 9B model asked to label and score one email returned 0.99 on five identical calls.
+  If you need an uncertainty signal, ask the same decision several times above temperature 0 and
+  measure how often the answers agree.
 - Text an attacker could write. Prompt injection has not been evaluated for this model.
 
 ## Tev1-4B-experimental
@@ -102,6 +106,9 @@ curl http://127.0.0.1:11434/api/chat -d '{
 
 The reply text is in `message.content` and should be one letter. Check the reply is exactly one
 letter listed in your options before acting on it, since the card warns of prose outside the format.
+Keep `"think": false` on every request like this; with a reasoning model and thinking left on, a
+one-word label can cost hundreds of tokens (measured in [models](../models/README.md), "Reasoning
+models").
 
 **Run it in Ollama from the community GGUF.** A community build exists at
 [prithivMLmods/Tev1-4B-experimental-GGUF](https://huggingface.co/prithivMLmods/Tev1-4B-experimental-GGUF)
@@ -143,6 +150,12 @@ What this does and does not show:
 A hosted classifier is fine when the text it sees is already public, synthetic, or has been
 scrubbed by a local detector, and your obligations to the people in that text allow a
 vendor to see it. Together's hosted price makes it easy to try on synthetic data.
+
+If a hosted lane depends on a zero-data-retention promise, check that promise for the exact key you
+use, from the provider's own responses, not from a key name, a CLI setting or someone's memory. xAI,
+for example, returns `x-zero-data-retention` and `x-data-retention` headers on its API responses;
+read them for each key, and for each endpoint you send sensitive data to. A key's name or an
+account description is not evidence.
 
 Only a local classifier is acceptable when it sees the raw text before you know how sensitive
 that text is, which is exactly the routing case. If the decision is "may this leave the machine,"

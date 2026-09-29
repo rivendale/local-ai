@@ -145,6 +145,50 @@ What this does and does not show:
 - Before you trust it on your own labels, build a set of a few hundred cases from your own
   (synthetic or properly cleared) data, with answers written down first, and measure it.
 
+## Laya: a local decision model that returns probabilities
+
+Read by the maintainer on 2026-09-29 from the Hugging Face API, the
+[laya-multilingual card](https://huggingface.co/convaiinnovations/laya-multilingual) and the
+[laya repository](https://github.com/NandhaKishorM/laya) (Apache-2.0, created 2026-09-18, last push
+2026-09-29). Not run here.
+
+**What it is.** A family of encoder models with a decision head, published on Hugging Face on
+2026-09-18 and 2026-09-19. You give it a state (text, an email, a ticket or JSON) and typed
+questions; it returns typed answers with probabilities in one forward pass, with no text generation.
+Unlike a chat model's self-reported confidence (see "What it must never decide alone"), those
+probabilities are a softmax over the options you listed (per the card), so they can be checked
+against your own labels, and they need to be (below).
+
+| Checkpoint | What its card says | Weights license, read 2026-09-29 |
+|---|---|---|
+| [laya](https://huggingface.co/convaiinnovations/laya) | ModernBERT-large, 421M parameters, 512 tokens, English | Apache-2.0 |
+| [laya-multilingual](https://huggingface.co/convaiinnovations/laya-multilingual) | mmBERT-base, 322M parameters, 1,024 tokens by default and up to 8,192, 100+ languages | Apache-2.0 |
+| [laya-typed-decisions](https://huggingface.co/convaiinnovations/laya-typed-decisions) | ModernBERT-large, 421M parameters, 1,024 tokens | Apache-2.0 |
+
+The `laya` Python package ([PyPI](https://pypi.org/project/laya/) 0.3.22, 2026-09-29) and its code
+are Apache-2.0. It needs PyTorch and Hugging Face `transformers`.
+
+- **Network behavior.** `laya.load()` and `laya.Router()` download weights from Hugging Face on
+  first use; cache them, then set `HF_HUB_OFFLINE=1`. GitHub code search of the repository for
+  "telemetry", "posthog", "sentry" and "analytics" on 2026-09-29 found only optional hooks you
+  install yourself (an OpenTelemetry example among them) and one unrelated example script. A search
+  of the package for HTTP client code ("urllib", "requests.get", "httpx", "urlopen") found it only
+  in the framework integrations, which call a Laya server at an address you supply. That is a code
+  search, not an audit. The optional `laya[onnx]` extra installs ONNX Runtime, whose telemetry is on
+  by default (see [models](../models/README.md)).
+- **Its own calibration caveat.** The multilingual card says that checkpoint "ships uncalibrated"
+  and is "systematically over-confident," and that fitting one temperature per question type and
+  option count on held-out data lowers its calibration error (mean ECE 0.314 to 0.106). The English
+  card's best calibration figure is also after temperature fitting. Treat the probabilities as a
+  score to calibrate on your data, not as a finished probability.
+- **Its own length and size caveats.** The multilingual card says documents are cut at 1,024 tokens
+  unless you pass `max_len=8192`, and that in its own test 16 to 18 of 20 requests were answered
+  correctly up to about 4,000 tokens of text and 8 to 17 of 20 beyond that. It also says to keep
+  `choice` questions under about 20 options.
+- **Test it on your own cases.** A few hundred, with answers written first; set thresholds from that
+  test, never from another model's.
+- **Under two weeks old at this reading.** Pin the package version and the model revision.
+
 ## Hosted classifier or local only
 
 A hosted classifier is fine when the text it sees is already public, synthetic, or has been

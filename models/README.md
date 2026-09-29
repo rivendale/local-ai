@@ -15,6 +15,7 @@ into it, so every model below has its own license line.
 | [Ollama](https://github.com/ollama/ollama) | MIT | macOS and Windows apps per its FAQ; other platforms not read | Its [FAQ](https://github.com/ollama/ollama/blob/main/docs/faq.mdx) (read 2026-09-24) says "Ollama runs locally. We don't see your prompts or data when you run locally." But it also has cloud-hosted models and web search, and a model pulled from the cloud catalog would send prompts to Ollama's service. **Required setup step: turn on local-only mode** with `"disable_ollama_cloud": true` in `~/.ollama/server.json`, or `OLLAMA_NO_CLOUD=1`. The macOS and Windows apps download updates automatically. Pulling a model contacts ollama.com's registry (or Hugging Face for `hf.co/` names). | 2026-09-26 (read that day), active; latest release v0.34.4 on 2026-09-23 |
 | [vLLM](https://github.com/vllm-project/vllm) | Apache-2.0 | Linux-first server; NVIDIA natively | **On by default:** anonymous usage stats (hardware and model configuration). Turn off with `VLLM_NO_USAGE_STATS=1` or `DO_NOT_TRACK=1`, or create the file `~/.config/vllm/do_not_track`. [Docs](https://docs.vllm.ai/en/latest/usage/usage_stats.html), read 2026-09-24. | 2026-09-24, active |
 | [LM Studio](https://lmstudio.ai/app-terms) | Proprietary. Free for personal and business use per its terms; source is closed. | Desktop app | Its [privacy policy](https://lmstudio.ai/app-privacy) says chats, history and documents are not transmitted and there is no usage telemetry. Model search and download, update checks, and IP plus basic device information via its CDN do leave the machine. | Closed source, not measurable |
+| [ONNX Runtime](https://github.com/microsoft/onnxruntime) | MIT | Linux, Windows, macOS, Android and iOS (named in its Privacy.md). Rarely installed on its own: it is the engine under kokoro-onnx (see [pii](../pii/README.md)) and other ONNX-based tools. | **On by default in official builds**, per its [Privacy.md](https://github.com/microsoft/onnxruntime/blob/main/docs/Privacy.md) (read 2026-09-29). Linux and macOS joined on 2026-07-24 (the commit "Add POSIX telemetry," included in v1.30.0): Linux, macOS, Android and iOS send trace events to Microsoft over HTTPS through the 1DS SDK. On Windows it writes ETW events, which the doc says are recorded only when a trace session is collecting and may be sent to Microsoft depending on user consent. **Turn it off** on Linux and macOS with `ORT_DISABLE_TELEMETRY=1` set before it loads; per the doc, that also stops a persistent device identifier from being created. In Python, `onnxruntime.disable_telemetry_events()` suppresses non-essential events, but a minimal start-up event may already have been sent. Builds made with `--no_telemetry` collect nothing. The Linux 1.30.0 wheel from PyPI contains the telemetry endpoint and the off switch (a string search of the installed library, 2026-09-29). Whether it sent anything was not measured. | 2026-09-29 (read that day), active; v1.30.0 on 2026-09-10 |
 
 ### Not recommended until its defaults are verified
 
@@ -53,6 +54,19 @@ simpler (Ollama with local-only mode on). If you run vLLM on anything sensitive,
 "No telemetry found" is a reading of documentation, not a measurement. After setup, run the tool
 with outbound traffic blocked (a firewall rule for that program, or a network namespace) and confirm
 it still works. Model downloads at install time are expected; anything after that is worth a look.
+On Linux, `unshare -rn <command>` runs one command in a namespace with no network at all; it worked
+for the text-to-speech run in [pii](../pii/README.md) on 2026-09-29.
+
+**Look under the tool, too.** A tool can have no telemetry of its own and still load a runtime that
+does. ONNX Runtime (table above) reports telemetry by default in its official builds, now on Linux
+and macOS as well, and many local tools run on it. Per their PyPI metadata, read 2026-09-29,
+kokoro-onnx (text-to-speech, see [pii](../pii/README.md)) and fastembed (embeddings) require it, and
+GLiNER's `onnx` extra and Laya's `onnx` extra (see [classifiers](../classifiers/README.md)) install
+it. Look for
+`onnxruntime` in a tool's dependencies even when the tool itself says it is offline, set
+`ORT_DISABLE_TELEMETRY=1` in its environment, and then do the blocked-traffic run. A run with no
+network shows the tool does not need one. It does not show what the tool sends when a network is
+there.
 
 ### Setup: one model, end to end
 
@@ -124,9 +138,23 @@ Current releases, from the Hugging Face API, read 2026-09-24:
 | GLM-4.7-Flash | 2026-01-19 | MIT |
 | gpt-oss-20b | 2025-08-04 | Apache-2.0 |
 | MiMo-V2.6-Distill-Qwen-9B (a fine-tune of Qwen3.5-9B; ggml-org publishes a GGUF) | 2026-09-21 | MIT per its Hugging Face tags, read 2026-09-26 |
+| Gemma 4 E2B-it and E4B-it | 2026-03-02 | Apache-2.0 per their Hugging Face tags, read 2026-09-29 ([E2B-it card](https://huggingface.co/google/gemma-4-E2B-it)) |
+| Gemma 4 12B-it | 2026-05-23 | Apache-2.0 per its [Hugging Face](https://huggingface.co/google/gemma-4-12B-it) tags, read 2026-09-29 |
+| Phi-4-mini-instruct (3.8B) | 2025-02-19 | MIT per its [Hugging Face](https://huggingface.co/microsoft/Phi-4-mini-instruct) tags, read 2026-09-29 |
 
 The [Qwen3.8-27B card](https://huggingface.co/Qwen/Qwen3.8-27B) (read 2026-09-24) describes a 27B
 dense model with a 262,144-token native context.
+
+The three Gemma 4 models above are Apache-2.0 and not gated, unlike `embeddinggemma-300m` in
+[search](../search/README.md), which carries the Gemma license. Ollama's
+[gemma4 tags page](https://ollama.com/library/gemma4/tags) (read 2026-09-29) lists
+`gemma4:e2b-it-qat` at 4.3 GB, `gemma4:e4b-it-qat` at 6.1 GB and `gemma4:12b-it-qat` at 7.2 GB,
+while the plain `gemma4:e2b` is 7.2 GB and `gemma4:12b` is 7.6 GB. On a 16 GB CPU-only machine the
+`-it-qat` builds leave the most room. Ollama's [phi4-mini tags page](https://ollama.com/library/phi4-mini/tags)
+lists `phi4-mini` at 2.5 GB. The gemma4 page also lists `gemma4:cloud` and `gemma4:31b-cloud`,
+which run on Ollama's servers; local-only mode (section 1) keeps them off. Licenses were not read for
+the larger Gemma 4 sizes on that page. None of these models was run here. [UNVERIFIED speed and
+quality]
 
 The maintainer compared [MiMo-V2.6-Distill-Qwen-9B](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B)
 at `Q8_0` with Qwen3.5-9B at `Q4_K_M` on 2026-09-24, on the RX 6700 XT: five hand-written tasks
@@ -136,7 +164,8 @@ per second against 56, partly because of its larger quantization. Five cases sho
 switch; they do not rank the two.
 
 The newest Qwen and GLM generations did not show a small dense chat model except Qwen3.5-4B and
-9B from the previous generation. A leaderboard-based "best small model" check was not done
+9B from the previous generation. Gemma 4 E2B-it and Phi-4-mini-instruct, added 2026-09-29, fill that
+gap on license and size, not on measurement. A leaderboard-based "best small model" check was not done
 [UNVERIFIED], so the small picks below are "current, licensed, published by the model's own lab,"
 not "measured best."
 
@@ -154,6 +183,7 @@ benchmark for it was found. Prefer the CPU path. [UNVERIFIED: not benchmarked]
 | Use | Model | Quantization | Notes |
 |---|---|---|---|
 | Chat and summarizing | Qwen3.5-9B or Qwen3.5-4B (Apache-2.0) | `Q4_K_M` | The 4B leaves room for the OS and a browser. The 9B is slower; I expect better answers from it, but no comparison was measured in these sources. Expect a few tokens per second at most on this class of machine. [UNVERIFIED: no speed measured] |
+| Chat, smallest footprint | Gemma 4 E2B-it (`gemma4:e2b-it-qat`, Apache-2.0) or Phi-4-mini-instruct (`phi4-mini`, MIT) | as published by Ollama | 4.3 GB and 2.5 GB downloads per Ollama's tags pages, read 2026-09-29. Not run here. [UNVERIFIED: no speed or quality measured] |
 | Coding | Qwen2.5-Coder-7B-Instruct (Apache-2.0) | `Q4_K_M` | Weights license tag is apache-2.0 (Hugging Face, read 2026-09-24). A 30B coder does not fit. |
 | Small classification | Tev1-4B-experimental, see [classifiers](../classifiers/README.md) | `Q6_K` GGUF is 3.46 GB, source: maintainer's check 2026-09-24 | The card says its weights license is being finalized; evaluate, do not ship. Read that page first. |
 | Embeddings | Qwen3-Embedding-0.6B (Apache-2.0) | Full precision or `Q8_0` | Light enough to run beside the chat model. |
@@ -283,4 +313,7 @@ that as unproven. [UNVERIFIED]
 - ROCm on Windows (TheRock or AMD's PyTorch packages) and ZLUDA were not tried on an RDNA2 card.
 - Image generation was not tried on the AMD card.
 - Telemetry defaults for the tools in the unverified list are not confirmed.
+- ONNX Runtime's telemetry was read from its docs and its installed library, not watched on the
+  wire.
+- Gemma 4 and Phi-4-mini-instruct were not run here.
 - Not legal advice; license summaries are readings of project pages.

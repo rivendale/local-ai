@@ -24,6 +24,7 @@ before you rely on it.
 | [whisper.cpp](https://github.com/ggml-org/whisper.cpp) | MIT | 2026-09-24 | No runtime network dependency. |
 | [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | MIT | 2025-11-19, slow | Local inference. |
 | [WhisperX](https://github.com/m-bain/whisperX) | BSD-2-Clause | 2026-08-30 | Local, GPU or CPU. Needs alignment models and pyannote weights from Hugging Face on first use. |
+| [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx) (read 2026-09-29) | MIT | 2026-09-01 | Text-to-speech. Ran with no network once its model files were on disk (measured 2026-09-29, section 3). Its ONNX Runtime dependency has telemetry on by default until `ORT_DISABLE_TELEMETRY=1` is set. |
 | [Tesseract](https://github.com/tesseract-ocr/tesseract) | Apache-2.0 | 2026-09-11 | Offline. |
 | [docTR](https://github.com/mindee/doctr) | Apache-2.0 | 2026-09-24 | Offline once weights are downloaded. |
 | [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) | Apache-2.0 | 2026-09-16 | Offline once weights are downloaded. |
@@ -132,7 +133,7 @@ text can still identify someone through context ("the only CFO of a three-person
 town"). Treat the map as sensitive data: encrypt it (see section 5) and do not log it with the
 prompt.
 
-## 3. Local speech-to-text
+## 3. Local speech-to-text and text-to-speech
 
 - **whisper.cpp:** C/C++ port of Whisper. CPU, Apple Metal or Core ML, CUDA, ROCm, Vulkan and
   Intel OpenVINO. Project caveat: on macOS versions older than Sonoma, Core ML use may see
@@ -149,6 +150,60 @@ prompt.
 - Transcripts of client calls are personal information. Run the detection above on the transcript.
 
 Weights for Whisper models were not license-checked in this pass. [UNVERIFIED]
+
+### Reading text aloud, locally
+
+Text-to-speech is the other direction: a note, a transcript or a message read aloud without the text
+going to a cloud voice service. The maintainer installed the pipeline below on 2026-09-29 and ran it
+on a desktop CPU (Intel Core i7-13700 under WSL2, no GPU) in its own Python 3.12 virtual
+environment. Versions and licenses were read the same day from the installed packages, PyPI, GitHub
+and Hugging Face.
+
+| Piece | Version run | License | Network and telemetry |
+|---|---|---|---|
+| [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx) | 0.4.9 (2025-05-10). The latest on [PyPI](https://pypi.org/project/kokoro-onnx/) is 0.6.1 (2026-08-19), not tried here. | MIT | GitHub code search of the repository for "telemetry", "posthog", "urllib" and "requests" found only a developer script that fetches voices, and the installed package imports no network library. You download the model files yourself. |
+| [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) v1.0 weights: `kokoro-v1.0.onnx` and `voices-v1.0.bin` from kokoro-onnx's [`model-files-v1.0`](https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0) release (2025-01-28) | v1.0 | Apache-2.0 (weights, per the Hugging Face card) | None; they are data files. A later `model-files-v1.1` release (2025-03-01) has a different `kokoro-v1.0.onnx` of another size, so record which one you took. |
+| [ONNX Runtime](https://github.com/microsoft/onnxruntime), the engine kokoro-onnx runs on | 1.30.0 (2026-09-10) | MIT | **Telemetry on by default in official builds, Linux and macOS included**, per its [Privacy.md](https://github.com/microsoft/onnxruntime/blob/main/docs/Privacy.md). Set `ORT_DISABLE_TELEMETRY=1` before it loads. Details in [models](../models/README.md). |
+| [espeakng-loader](https://github.com/thewh1teagle/espeakng-loader) | 0.2.4 | MIT for the loader. The eSpeak NG 1.52.0 library it bundles is [GPL-3.0](https://github.com/espeak-ng/espeak-ng). | No network code in the installed package; it loads the bundled library. |
+| [phonemizer-fork](https://pypi.org/project/phonemizer-fork/) | 3.3.2 | GPL-3.0-or-later, per its package metadata | No network code in the installed package. kokoro-onnx 0.6.1 depends on [phonemizer](https://github.com/bootphon/phonemizer) (GPL-3.0) instead. |
+
+The smallest render, tested with kokoro-onnx 0.4.9 (`speak.py`, synthetic text):
+
+```python
+import soundfile as sf
+from kokoro_onnx import Kokoro
+
+k = Kokoro("kokoro-v1.0.onnx", "voices-v1.0.bin")
+samples, rate = k.create("This is a synthetic test sentence.", voice="af_heart", speed=1.0, lang="en-us")
+sf.write("out.wav", samples, rate)
+```
+
+Run it with no network, and check what it wrote:
+
+```
+ORT_DISABLE_TELEMETRY=1 unshare -rn python speak.py
+ffmpeg -i out.wav -af ebur128,silencedetect=noise=-50dB:d=1 -f null -
+```
+
+**What was measured.** Earlier on 2026-09-29, five voices reading non-personal sample text each
+rendered 30 to 40 seconds of speech at about -23 LUFS integrated loudness; how that loudness was
+measured was not recorded. Then, inside `unshare -rn` (a network namespace with only a loopback
+interface, which is down, and no DNS), a two-sentence synthetic text rendered 8.2 seconds of speech
+in about 3 seconds including model load, at -22.2 LUFS with no silence of a second or more. It did
+so with ONNX Runtime's telemetry left at its default and again with `ORT_DISABLE_TELEMETRY=1`, and the
+two files were byte-identical.
+
+- **What that shows.** The pipeline needs no network once the model files are on disk. It does not
+  show what ONNX Runtime sends when a network is available; that was not measured. Set
+  `ORT_DISABLE_TELEMETRY=1` in the environment that runs it.
+- **Keep it isolated.** Install `kokoro-onnx` and `soundfile` in their own virtual environment, keep
+  the two model files beside the script, and record each file's SHA-256 the first time so a changed
+  download is caught.
+- **Check the audio, not the exit code.** A failed synthesis can still write a valid file and exit
+  0. Measure loudness and look for silence on every render, as above.
+- **GPL in the chain.** eSpeak NG and phonemizer turn text into phonemes, and both are GPL-3.0.
+  Running them for yourself is ordinary use; shipping them inside a product brings GPL obligations.
+  This is a reading of the licenses, not legal advice.
 
 ## 4. Local OCR
 
@@ -214,4 +269,6 @@ copied from the research notes, except `--no-verification`, which the notes reco
   is a code search, not a full audit.
 - DataFog benchmark numbers were not read.
 - Whisper model weight licenses were not checked.
+- Text-to-speech was run with no network, not watched with one, so what ONNX Runtime sends when a
+  network is present is unmeasured.
 - Not legal advice. For regulated firms, see [advisers](../advisers.md).

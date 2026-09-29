@@ -23,6 +23,7 @@ says so.
 | [Kotaemon](https://github.com/Cinnamon/kotaemon) | Apache-2.0 | 2026-07-14, slowing | Yes | **On by default, inherited from Gradio.** Its UI does not set `analytics_enabled=False`, and Gradio defaults `GRADIO_ANALYTICS_ENABLED` to true and posts to `api.gradio.app`. Set `GRADIO_ANALYTICS_ENABLED=False` before launch. |
 | [Onyx](https://github.com/onyx-dot-app/onyx) (formerly Danswer) | MIT for the core; a separate Enterprise license covers everything under `ee/` ([LICENSE](https://github.com/onyx-dot-app/onyx/blob/main/LICENSE)) | 2026-09-24 | Yes; the repo ships air-gap test compose files | **On by default:** posts to `telemetry.onyx.app` with a generated customer UUID and event type. Off with `DISABLE_TELEMETRY=true`. A client-side PostHog hook exists but is inactive unless an admin sets `POSTHOG_API_KEY`. Heavy stack (Postgres, OpenSearch, Redis, MinIO, model servers). |
 | [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with native AI | GPL-3.0 | 2026-09-24 | Yes | AI is off by default (`PAPERLESS_AI_ENABLED=false`). Backend `ollama` stays local; `openai-like` sends document content to that provider and the docs say so. The update check is off by default. |
+| [qmd](https://github.com/tobi/qmd) (read 2026-09-29) | MIT | 2026-09-09 | Yes, after the first run downloads its models | No telemetry found: GitHub code search of the repository for "telemetry", "posthog", "analytics" and "sentry" on 2026-09-29 hit only fine-tuning data, test documents and a substring match, and the same search of [node-llama-cpp](https://github.com/withcatai/node-llama-cpp) (MIT), which runs its models, found nothing. The first run downloads three GGUF models from Hugging Face into `~/.cache/qmd/models/`, and `qmd pull` checks them against Hugging Face again. Its HTTP MCP server binds `localhost` unless you pass `--host` or set `QMD_HOST`. |
 
 Paperless-ngx AI details (`docs/configuration.md#ai` in the
 [repository](https://github.com/paperless-ngx/paperless-ngx), read 2026-09-24): embeddings can use a
@@ -34,6 +35,17 @@ server if content may not leave your network. The add-on
 currently not maintained. [paperless-gpt](https://github.com/icereed/paperless-gpt) (MIT) is
 active and supports Ollama; it also supports cloud providers, so check which backend you set.
 Start with the native feature.
+
+qmd (latest release v2.8.3, 2026-08-16) is a command-line search tool and MCP server rather than a
+chat app: keyword (BM25) search, vector search, query expansion and a reranker over Markdown notes,
+transcripts and documents, all through node-llama-cpp with no API key (its
+[README](https://github.com/tobi/qmd), read 2026-09-29). Its three default models carry three
+licenses, read from Hugging Face on 2026-09-29: the embedder `embeddinggemma-300M` has the Gemma
+license of its base model (section 3), the reranker `Qwen3-Reranker-0.6B` is Apache-2.0, and the
+query-expansion model, a fine-tune of Qwen3-1.7B, is tagged MIT. To avoid the Gemma license, set
+`QMD_EMBED_MODEL` to another model, such as
+`hf:Qwen/Qwen3-Embedding-0.6B-GGUF/Qwen3-Embedding-0.6B-Q8_0.gguf` (Apache-2.0), and re-index with
+`qmd embed -f`; vectors from two different models do not mix. Not run here.
 
 ## 2. Parsing and OCR (not recommended until defaults are verified)
 
@@ -109,7 +121,9 @@ the weights license.
 The two wrapper libraries (`rerankers`, `mxbai-rerank`) are not recommended until their telemetry
 defaults are verified; none was checked. The model weights load locally after the first download,
 but the library or runtime that loads them is what could phone home, and that was not verified for
-any loader here.
+any loader here. ONNX Runtime is one such runtime with telemetry on by default, and the fastembed
+embedding library requires it (PyPI metadata, read 2026-09-29); see "Look under the tool, too" in
+[models](../models/README.md).
 
 ## 5. Vector stores
 
@@ -214,3 +228,4 @@ whole folder were not read, so use the `/ui` upload or the README's own instruct
 - Star counts, push dates and download counts are 2026-09-24 snapshots.
 - Weights license for Marker and Surya may change independently of the code.
 - No retrieval-quality benchmark was run for any stack here.
+- qmd was read, not run; its telemetry finding is a code search, not an audit.

@@ -226,7 +226,8 @@ applies.
   models are coming, "including models served by Ollama's cloud," so keep Ollama's local-only mode on
   (see [models](../models/README.md)).
 - **Speed off Apple hardware is unmeasured.** The announcement's 91 ms per decision is Nimble 9B on an
-  Apple M5 Max, averaged over one small Pac-Man example prompt, so it is not a general figure. Per the pull request, the GGUF path through llama-server runs one completion per
+  Apple M5 Max, averaged over one small Pac-Man example prompt, so it is not a general figure.
+  Per the pull request, the GGUF path through llama-server runs one completion per
   candidate option, while the MLX path scores candidates directly, so expect a many-option question
   to be slower on an AMD or CPU machine, and measure it there first.
 

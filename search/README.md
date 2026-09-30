@@ -24,6 +24,7 @@ says so.
 | [Onyx](https://github.com/onyx-dot-app/onyx) (formerly Danswer) | MIT for the core; a separate Enterprise license covers everything under `ee/` ([LICENSE](https://github.com/onyx-dot-app/onyx/blob/main/LICENSE)) | 2026-09-24 | Yes; the repo ships air-gap test compose files | **On by default:** posts to `telemetry.onyx.app` with a generated customer UUID and event type. Off with `DISABLE_TELEMETRY=true`. A client-side PostHog hook exists but is inactive unless an admin sets `POSTHOG_API_KEY`. Heavy stack (Postgres, OpenSearch, Redis, MinIO, model servers). |
 | [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with native AI | GPL-3.0 | 2026-09-24 | Yes | AI is off by default (`PAPERLESS_AI_ENABLED=false`). Backend `ollama` stays local; `openai-like` sends document content to that provider and the docs say so. The update check is off by default. |
 | [qmd](https://github.com/tobi/qmd) (read 2026-09-29) | MIT | 2026-09-09 | Yes, after the first run downloads its models | No telemetry found: GitHub code search of the repository for "telemetry", "posthog", "analytics" and "sentry" on 2026-09-29 hit only fine-tuning data, test documents and a substring match, and the same search of [node-llama-cpp](https://github.com/withcatai/node-llama-cpp) (MIT), which runs its models, found nothing. The first run downloads three GGUF models from Hugging Face into `~/.cache/qmd/models/`, and `qmd pull` checks them against Hugging Face again. Its HTTP MCP server binds `localhost` unless you pass `--host` or set `QMD_HOST`. |
+| [zg (zvec-grep)](https://github.com/zvec-ai/zvec-grep) (npm `@zvec/zvec-grep` 0.2.2, run 2026-09-30) | Apache-2.0 | 2026-09-30 | Yes, after the first index downloads its embedding model | No telemetry found: a string search of the installed 0.2.2 package for "telemetry", "posthog", "analytics", "sentry", "segment.io" and "mixpanel" on 2026-09-30 found nothing; its model downloader fetches from `huggingface.co`. Traffic was not watched. `zg install` writes MCP entries into agent config files (targets include `all` and `auto`) and can start a local server; see below. |
 
 Paperless-ngx AI details (`docs/configuration.md#ai` in the
 [repository](https://github.com/paperless-ngx/paperless-ngx), read 2026-09-24): embeddings can use a
@@ -46,6 +47,29 @@ query-expansion model, a fine-tune of Qwen3-1.7B, is tagged MIT. To avoid the Ge
 `QMD_EMBED_MODEL` to another model, such as
 `hf:Qwen/Qwen3-Embedding-0.6B-GGUF/Qwen3-Embedding-0.6B-Q8_0.gguf` (Apache-2.0), and re-index with
 `qmd embed -f`; vectors from two different models do not mix. Not run here.
+
+zg is a command-line hybrid search (BM25, vectors and ripgrep) over code and documents, with an
+MCP server; its default embedding model, `potion-code-16m-v2`, is small enough to need no GPU
+(model name read from the index manifest it wrote; the model's license was not read
+[UNVERIFIED]). Run on 2026-09-30, on two private repositories of Markdown and scripts, under WSL on a desktop
+(which device the embedder used was not checked):
+
+- **Cost.** The first index took about 20 seconds and peaked at about 1.5 GB resident memory; the
+  second, a smaller repository, took about 6 seconds and about 0.65 GB (`/usr/bin/time -v`).
+- **Quality, two tests only.** In two plain-English queries, the file we wanted ranked 4th and 2nd
+  of 7 results. A third file that a plain keyword search finds was missed. So it adds a way to
+  find notes worded differently from the query; it does not replace exact search. Keep both.
+- **The index is written inside the project.** Its README says the index lives in `.zvec-grep/`
+  under the indexed project root. In a git repository, add `.zvec-grep/` to `.git/info/exclude`
+  before the first index (a local exclude that needs no commit), or the index gets committed. The
+  index is a copy of what it read, so choose the roots by name first and leave out anything that
+  must not be copied.
+- **Do not run the installer that configures agents.** `zg install` writes MCP entries into the
+  config of every agent it targets (its CLI docs list `all` and `auto` among the targets) and
+  can start a server. Some agents rewrite their own config file while running, and a tool that
+  edits it underneath them races the writer. Install the package on its own (for example
+  `npm install --prefix ~/.local/share/zg @zvec/zvec-grep@0.2.2`) and add an MCP entry by hand
+  where you want one.
 
 ## 2. Parsing and OCR (not recommended until defaults are verified)
 
@@ -240,5 +264,6 @@ whole folder were not read, so use the `/ui` upload or the README's own instruct
 - Ingestion of a folder is shown only for Paperless-ngx (partly) and PrivateGPT (via `/ui`); exact commands were not in the sources.
 - Star counts, push dates and download counts are 2026-09-24 snapshots.
 - Weights license for Marker and Surya may change independently of the code.
-- No retrieval-quality benchmark was run for any stack here.
+- No retrieval-quality benchmark was run for any stack here. The zg notes above are two queries,
+  not a benchmark.
 - qmd was read, not run; its telemetry finding is a code search, not an audit.

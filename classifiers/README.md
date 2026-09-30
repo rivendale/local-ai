@@ -28,6 +28,13 @@ find personal information; see [pii](../pii/README.md) for that.
   If you need an uncertainty signal, ask the same decision several times above temperature 0 and
   measure how often the answers agree.
 - Text an attacker could write. Prompt injection has not been evaluated for this model.
+- Whether text is a prompt injection, even with a model built for it. Guardrail and safety
+  classifiers are not a control against injection. In a vendor chart of small guardrail models
+  from Respan, shared on social media and seen 2026-09-30 (no primary link found; vendor-run, and
+  it crowns the vendor's own model), the top four averaged 0.59 to 0.64 F1 across categories, and the best score on the jailbreak and prompt-injection row was
+  0.294 F1. Use such a model as a cheap pre-filter that routes obvious cases, and keep the real
+  control in what the agent is allowed to do: no tool or permission that a successful injection
+  could turn into harm.
 
 ## Tev1-4B-experimental
 

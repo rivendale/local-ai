@@ -49,6 +49,26 @@ Both are Apache-2.0 and serve an API with real throughput on NVIDIA. Pick them w
 people or programs share one GPU. For one person chatting with one model, Ollama or llama.cpp is
 simpler (Ollama with local-only mode on). If you run vLLM on anything sensitive, set `VLLM_NO_USAGE_STATS=1` first.
 
+### What the runtime exposes, and what a router does not do
+
+- **Hidden states need llama.cpp or transformers, not Ollama.** Some research reads a signal from
+  a model's internal activations, for example a confidence estimate from a few "value neurons"
+  found by probing ([arXiv 2602.00986](https://arxiv.org/abs/2602.00986), read 2026-09-30). To
+  try that locally you need a runtime that hands you per-layer activations: transformers with
+  `output_hidden_states=True`, or llama.cpp through its library API. Ollama's HTTP API returns
+  generated text and pooled embeddings, not per-layer activations [UNVERIFIED: from its API
+  reference, not re-read for this page]. Choose the runtime before you design the signal.
+- **A multi-machine router spreads requests, it does not add up memory.** NVIDIA's
+  [Personal AI Router](https://github.com/NVIDIA/Personal-AI-Router) (Apache-2.0, README read
+  2026-09-30) puts several home machines behind one Ollama- or OpenAI-compatible endpoint and
+  sends each request to one node. Its README: it does "not pool GPU memory, combine GPUs into a
+  larger logical GPU, shard one model across machines, or split an in-flight inference request
+  between nodes." So it pays off only when more than one machine has a GPU that can run the model
+  you want; a second machine without one adds a node that can take nothing. It also exposes a
+  LAN listener on each machine, gated by cluster mTLS, while the engine itself binds to loopback
+  (its `desktop/docs/services-parity.md`, "Secure inference transport", read 2026-09-30). Read that
+  before a trial and keep the listener on a private network.
+
 ### Check that nothing leaves
 
 "No telemetry found" is a reading of documentation, not a measurement. After setup, run the tool

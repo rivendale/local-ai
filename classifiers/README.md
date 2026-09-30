@@ -189,6 +189,48 @@ are Apache-2.0. It needs PyTorch and Hugging Face `transformers`.
   test, never from another model's.
 - **Under two weeks old at this reading.** Pin the package version and the model revision.
 
+## Ollama decision models, 2026-09-29
+
+Read on 2026-09-30 from Ollama's
+[announcement](https://ollama.com/blog/ollama-now-supports-jev-style-decision-models) (2026-09-29),
+its [Decision docs](https://docs.ollama.com/capabilities/decision), and the pull request that added
+the API, [ollama/ollama#18606](https://github.com/ollama/ollama/pull/18606) (merged 2026-09-28).
+**Not run here, and untested on AMD.**
+
+**What it is.** Ollama 0.35.0 (released 2026-09-28; the docs say v0.35.0 or later) adds a
+`/v1/systemone` endpoint for typed decisions. You send a `state` and named questions, and each answer
+comes back with probabilities over the options rather than generated text. There are three question
+types: `choice` (2 to 26 named options; returns the most likely one and each option's probability),
+`noul` (the probability of true) and `score` (2 to 26 ordered levels; returns the
+probability-weighted level). One request can carry several questions about the same state.
+Per the pull request, the API is text-only with a 2,048-token prompt limit, oversized prompts are
+rejected without truncation, and "the current prompt is Nimble-specific." A 2,048-token limit
+matters if the `state` is an email or a ticket: measure your inputs against it before relying on it.
+
+| Model | Ollama name | Per the announcement |
+|---|---|---|
+| Nimble | `nimble` | 9B, from Bespoke Labs, described as open source |
+| Tev1 | `tev1`, also tagged `tev1:4b` | 4B, experimental, from Together AI: the model covered above |
+| Tev1 0.8B | `tev1:0.8b` | 0.8B, experimental, from Together AI |
+
+Weights licenses for these library builds were not read; for Tev1, the license table above still
+applies.
+
+- **The probabilities still need calibrating.** The docs say `confidence` "measures how strongly the
+  model favors one answer over the others" and that "a higher value does not guarantee the answer is
+  correct." Set thresholds from your own labeled cases, as with Laya.
+- **Never the only safety gate.** The pull request's own validation note says "Nimble retains its
+  existing prompt-injection routing failure in the task suite." Text an attacker can write must not
+  reach a decision nothing else checks; keep a hard rule or a person behind it.
+- **Network.** Local requests need no API key, per the docs. The announcement says more decision
+  models are coming, "including models served by Ollama's cloud," so keep Ollama's local-only mode on
+  (see [models](../models/README.md)).
+- **Speed off Apple hardware is unmeasured.** The announcement's 91 ms per decision is Nimble 9B on an
+  Apple M5 Max, averaged over one small Pac-Man example prompt, so it is not a general figure.
+  Per the pull request, the GGUF path through llama-server runs one completion per
+  candidate option, while the MLX path scores candidates directly, so expect a many-option question
+  to be slower on an AMD or CPU machine, and measure it there first.
+
 ## Hosted classifier or local only
 
 A hosted classifier is fine when the text it sees is already public, synthetic, or has been

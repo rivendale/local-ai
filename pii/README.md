@@ -109,6 +109,34 @@ accuracy limits; restic is covered in section 5.
   others) and output scanners (Deanonymize, Sensitive and others) as separate concerns. Check the
   outbound text as well as the inbound prompt.
 
+### pw-redact-core (discontinued), as prior art
+
+Read on 2026-09-30 from the GitHub API and each repository's README and package files.
+
+- [pw-redact-core](https://github.com/Protocol-Wealth/pw-redact-core) (MIT): a Python redaction
+  engine for financial-services AI pipelines. Its README calls the repository a reference
+  implementation, and its CI workflow is manual-only and marks the project discontinued in favor of
+  a successor PII guard.
+- The successor is the `pii-guard` package (version 0.4.2) in
+  [pwos-core](https://github.com/Protocol-Wealth/pwos-core) (Apache-2.0, for the repository and the
+  package): regex patterns, NER, financial recognizers such as CUSIPs and account references, and an
+  allowlist of finance terms that should never be masked.
+- Check the repositories' license files before use.
+- Network and telemetry behavior were not checked for either, so neither is recommended here. They
+  are listed as prior art for a layered design.
+
+### Any redactor: test overlapping detections
+
+Layered detectors (regex, NER, custom recognizers) often flag overlapping spans, and a redactor has
+to merge them before masking. When two detections overlap and the shorter one scores higher, a merge
+that keeps only the higher-scoring span drops the longer one, and the part of the longer span outside
+the shorter one goes out unmasked. For example, an address detection over `12 Example Lane,
+Springfield` and a higher-scoring location detection over only `Springfield` can leave
+`12 Example Lane` in clear. Mask the union of overlapping spans (or every character any detector
+flagged), and test with synthetic text built to overlap: a name inside an email address, a short
+number inside a longer account string, a city inside a street address. This is a general caution
+for any span-merging redactor, not a measurement of a project on this page.
+
 ## 2. Reversible pseudonymization
 
 The pattern, which Presidio's Anonymizer and Deanonymizer implement (and LLM Guard's paired
@@ -224,6 +252,21 @@ are covered in [search](../search/README.md).
 - **gitleaks** (MIT): regex detection of keys and tokens across history, working trees or stdin,
   fully local. It publishes no false-positive rate; it ships inline `gitleaks:allow` comments, path
   allowlists and stopwords because tuning per repo is expected. Fits a pre-commit hook or CI.
+  Measured on gitleaks 8.30.1 on 2026-09-06:
+  - **Know which file the scan reads.** A scan run with `--config <shared file>` never reads a
+    repository's own `.gitleaks.toml`, so an allowlist written there does nothing and the finding
+    keeps firing. It does read the repository's `.gitleaksignore`. Put exact fingerprints there (it
+    can silence only the findings it names, so its reach is bounded) and keep rule-wide or path-wide
+    exemptions in the config the scan actually loads.
+  - **One secret can need several fingerprints.** `gitleaks git` reports per commit, so a value added
+    in two commits is two findings at the same file, line and rule. Naming one leaves the count lower
+    and the alert still firing, which looks the same as an entry that was wrong or never read. On
+    GitHub, fetch pull request refs (`refs/pull/*/head`) before listing findings; `git fetch --all`
+    skips them.
+  - **`.gitleaksignore` is read from the working tree.** A scan of a clone parked on another branch
+    misses a suppression committed to the default branch. After adding an entry, confirm the finding
+    is silenced in the configuration the scheduled scan uses, and that a freshly planted fake token
+    elsewhere in the tree is still caught.
 - **TruffleHog** (AGPL-3.0): 800 or more secret types across git, cloud storage and Docker images.
   By default it **verifies** findings by calling the credential's own service (its example is AWS
   `GetCallerIdentity`), so it is not offline by default. Run with `--no-verification` for

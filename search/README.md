@@ -83,13 +83,26 @@ tools lean on a hosted model for those files: `coworker/pdf_support.py` in
 and its note for an image-only PDF says "A model with native PDF support (Claude, GPT, Gemini) can
 read it." That is fine for public files. For a private one it is the step that sends the whole
 document off the machine. OCR locally instead (Tesseract and the tools in [pii](../pii/README.md)).
-Two rules keep the search honest afterward:
+Four rules keep the search honest afterward:
 
 - **Record a file extraction could not read as unread, never as empty.** Encrypted, corrupt,
   timed-out and OCR-read-nothing files are still unsearched. Collapse them into "no text" and a
   search reports a clean zero over files nobody opened.
 - **Flag a partial OCR.** If you cap OCR at some number of pages, mark the record partial; a
   400-page file read to page 30 otherwise looks fully searched.
+- **Normalize characters; do not re-split words.** Mapping a character to a canonical form (Unicode
+  normalization, curly quotes to straight ones) is one-to-one and cannot destroy a spelling.
+  Deleting a separator can: joining the hyphen at a line break so `micro-` and `payments` match
+  `micropayments` also turned `K-` and `1` into `K1`, so a search for `K-1` missed, and five of six
+  legitimate hyphenated terms tested that way became unsearchable. If you must re-segment, keep the
+  original text and add the joined form beside it, both spellings (`K-1` and `K1`), since at a line
+  break neither appears contiguously. Test that a term is findable anywhere in the stored text, not
+  that it is present in the body.
+- **A cleaner that lists what it keeps drops what the list forgot.** A regeneration step that promised
+  to preserve curated titles and descriptions, and named exactly those two, removed every section
+  heading on each run with no error. When a step cleans or rewrites extracted text, ask what else in
+  it a person wrote that the step cannot re-derive, compare headings and line counts before and after
+  on every run, and say in the output file itself that it is generated.
 
 Keying the extracted-text cache by content hash rather than path means one document stored in two
 folders is extracted once, and an edited file is re-extracted without any invalidation logic.

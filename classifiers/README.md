@@ -203,6 +203,9 @@ comes back with probabilities over the options rather than generated text. There
 types: `choice` (2 to 26 named options; returns the most likely one and each option's probability),
 `noul` (the probability of true) and `score` (2 to 26 ordered levels; returns the
 probability-weighted level). One request can carry several questions about the same state.
+Per the pull request, the API is text-only with a 2,048-token prompt limit, oversized prompts are
+rejected without truncation, and "the current prompt is Nimble-specific." A 2,048-token limit
+matters if the `state` is an email or a ticket: measure your inputs against it before relying on it.
 
 | Model | Ollama name | Per the announcement |
 |---|---|---|
@@ -223,7 +226,7 @@ applies.
   models are coming, "including models served by Ollama's cloud," so keep Ollama's local-only mode on
   (see [models](../models/README.md)).
 - **Speed off Apple hardware is unmeasured.** The announcement's 91 ms per decision is Nimble 9B on an
-  Apple M5 Max. Per the pull request, the GGUF path through llama-server runs one completion per
+  Apple M5 Max, averaged over one small Pac-Man example prompt, so it is not a general figure. Per the pull request, the GGUF path through llama-server runs one completion per
   candidate option, while the MLX path scores candidates directly, so expect a many-option question
   to be slower on an AMD or CPU machine, and measure it there first.
 

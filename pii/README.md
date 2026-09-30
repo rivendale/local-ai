@@ -120,8 +120,8 @@ Read on 2026-09-30 from the GitHub API and each repository's README and package 
 - The successor is the `pii-guard` package (version 0.4.2) in
   [pwos-core](https://github.com/Protocol-Wealth/pwos-core) (Apache-2.0, for the repository and the
   package): regex patterns, NER, financial recognizers such as CUSIPs and account references, and an
-  allowlist of finance terms that should never be masked. The repository also carries a `PATENTS`
-  file and the package README states a pending patent; read both before building on it.
+  allowlist of finance terms that should never be masked.
+- Check the repositories' license files before use.
 - Network and telemetry behavior were not checked for either, so neither is recommended here. They
   are listed as prior art for a layered design.
 

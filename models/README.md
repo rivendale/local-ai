@@ -208,6 +208,11 @@ maintainer on 2026-09-26 with Ollama 0.34.3 on Windows and this card: the server
 `/api/ps` shows the whole 5.7 GB model in VRAM, and the log's config line reads `OLLAMA_VULKAN:true`
 with the variable unset in both the user and the system environment. Generation ran at 50 to 63 tokens per second.
 
+Re-measured on 2026-09-30 after upgrading to Ollama 0.35.0 with `winget upgrade --id Ollama.Ollama`:
+still `library=Vulkan`, and six models (0.8B to 9B, including the `/v1/systemone` decision models
+`tev1` and `nimble`) each loaded fully into VRAM, from 0.9 GB to 9.1 GB. The decision endpoint works on
+this card through Vulkan; accuracy and speed are in [classifiers](../classifiers/README.md#one-small-run-on-amd-2026-09-30).
+
 With 12 GB of VRAM and 62 GB of system RAM, partial offload is the pattern: the GPU holds as many
 layers as fit and the CPU holds the rest.
 

@@ -64,8 +64,10 @@ simpler (Ollama with local-only mode on). If you run vLLM on anything sensitive,
   sends each request to one node. Its README: it does "not pool GPU memory, combine GPUs into a
   larger logical GPU, shard one model across machines, or split an in-flight inference request
   between nodes." So it pays off only when more than one machine has a GPU that can run the model
-  you want; a second machine without one adds a node that can take nothing. It also opens a
-  cluster port on each machine: read its SECURITY.md and keep that port on a private network.
+  you want; a second machine without one adds a node that can take nothing. It also exposes a
+  LAN listener on each machine, gated by cluster mTLS, while the engine itself binds to loopback
+  (its `desktop/docs/services-parity.md`, "Secure inference transport", read 2026-09-30). Read that
+  before a trial and keep the listener on a private network.
 
 ### Check that nothing leaves
 

@@ -1,5 +1,9 @@
 # local-ai
 
+> Part of a set of public repos maintained separately. Start at
+> [hsi-operator](https://github.com/rivendale/hsi-operator): it says what each one is for and
+> when to read it.
+
 Run AI on your own hardware so private information never leaves the machine: open models and
 the runtimes that serve them, a small local classifier for routing and triage, private document
 search, and tools for finding and removing personal information before anything reaches a hosted

@@ -11,6 +11,10 @@ For any AI coding tool working in this repository.
 A public guide, with small scripts, for running AI privately on your own hardware. It recommends
 tools; it does not vendor them.
 
+Read `README.md`, then the domain directory for the task. Keep deployment and
+installation state in the consuming project. A listed runtime or model is guidance,
+not evidence that it is installed, accelerated or isolated on a particular machine.
+
 ## Rules
 
 1. **Every version, license, price and default is dated and linked** to the page it was read from.

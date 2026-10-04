@@ -14,13 +14,6 @@ the search index and every tool that touches it run locally, with telemetry off,
 that nothing left the machine. Recommending a local tool is not enough; its phone-home defaults are
 stated next to it.
 
-## Continuing work with an agent
-
-Read [AGENTS.md](AGENTS.md) for this repository's working rules. Use the current
-checkout and the linked source dates, rather than a summary from an older session.
-Keep project-specific state and tool readiness in the project that uses this
-guidance; this repository does not certify an installation or a deployed service.
-
 Contents are being added through reviewed pull requests. Every version, license and default is
 dated and linked to the source it was read from.
 
@@ -31,5 +24,12 @@ dated and linked to the source it was read from.
 - [`pii/`](pii/README.md): detecting, redacting and pseudonymizing personal information; local speech and OCR.
 - [`advisers.md`](advisers.md): notes for regulated firms (for example SEC-registered investment advisers) on what
   a local-first setup helps with and what it does not. Not legal advice.
+
+## Continuing work with an agent
+
+Read [AGENTS.md](AGENTS.md) for this repository's working rules. Use the current
+checkout and the linked source dates, rather than a summary from an older session.
+Keep project-specific state and tool readiness in the project that uses this
+guidance; this repository does not certify an installation or a deployed service.
 
 MIT licensed. Third-party projects keep their own licenses; read each one before you use it.

@@ -223,6 +223,14 @@ window, with input never truncated.
 | Tev1 | `tev1`, also tagged `tev1:4b` | 4B, experimental, from Together AI: the model covered above |
 | Tev1 0.8B | `tev1:0.8b` | 0.8B, experimental, from Together AI |
 
+**Clef, added in Ollama v0.35.1: watch.** The
+[v0.35.1 release notes](https://github.com/ollama/ollama/releases/tag/v0.35.1) (2026-09-29, read
+2026-10-07) add Cloudflare's Clef (27B) and Clef Flash (9B) to `/v1/systemone`, and both accept an
+image with the text state. Both are Apache-2.0 on Hugging Face
+([Cloudflare/clef](https://huggingface.co/Cloudflare/clef), read 2026-10-07). Ollama's tags pages
+list `clef:27b` at 18 GB and `clef-flash:9b` at 11 GB, so neither leaves room beside another model on a
+12 GB card, and the 27B does not fit it at all without offload. Not run here.
+
 Weights licenses, read on 2026-09-30 from the license text each library build embeds (`ollama show
 --license`, or the `license` field of `/api/show`):
 

@@ -43,6 +43,19 @@ The [build docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md
 enable more than one in one build. Ollama, LM Studio, Jan and KoboldCpp all embed llama.cpp or a
 fork of it as their inference core, so the same backend tradeoffs show up in every one of them.
 
+**Speculative decoding with DFlash: watch, needs more VRAM than 12 GB.** llama.cpp's
+[speculative decoding docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/speculative.md)
+(read 2026-10-07) list a `draft-dflash` type: a small block-diffusion draft model proposes a block of
+tokens in one pass and the main model checks them, so output matches the main model alone. DFlash
+support was merged in [#22105](https://github.com/ggml-org/llama.cpp/pull/22105) (2026-06-28) and
+DFlash 2 in [#27342](https://github.com/ggml-org/llama.cpp/pull/27342) (2026-08-27). z-lab publishes
+a DFlash 2 draft for Qwen3.8-27B ([GGUF](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2-GGUF),
+Apache-2.0, 1.1 GB at `Q4_K_M`, read 2026-10-07). The draft runs beside the 27B model, which is about
+16 to 17 GB at `Q4_K_M` (section 2), so the pair does not fit a 12 GB card, and with partial offload
+the speedup is unmeasured. One published setup
+([hanxiao/Qwen3.8-27B-UD-Q4_K_XL-L4](https://github.com/hanxiao/Qwen3.8-27B-UD-Q4_K_XL-L4), Apache-2.0)
+used a 24 GB GPU. Not run here.
+
 ### When to pick vLLM or SGLang
 
 Both are Apache-2.0 and serve an API with real throughput on NVIDIA. Pick them when several
@@ -246,6 +259,10 @@ layers as fit and the CPU holds the rest.
 GLM-5.3-Flash (320B total) does not realistically fit 12 GB plus 62 GB at usable quality. Do not plan
 around it on this class of machine.
 
+**Watch, too big for this card:** Qwen3.8-27B with a DFlash draft (section 1) and Cloudflare's
+27B Clef decision model (18 GB on Ollama; see [classifiers](../classifiers/README.md#ollama-decision-models-2026-09-29)).
+Both want a card with more VRAM than 12 GB.
+
 **Prove which backend ran.** A model that silently falls back to the CPU still answers, only slower,
 so an answer is not proof. Three local checks:
 
@@ -341,4 +358,5 @@ that as unproven. [UNVERIFIED]
 - ONNX Runtime's telemetry was read from its docs and its installed library, not watched on the
   wire.
 - Gemma 4 and Phi-4-mini-instruct were not run here.
+- DFlash speculative decoding was read from docs and model cards, not run.
 - Not legal advice; license summaries are readings of project pages.

@@ -25,6 +25,7 @@ says so.
 | [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with native AI | GPL-3.0 | 2026-09-24 | Yes | AI is off by default (`PAPERLESS_AI_ENABLED=false`). Backend `ollama` stays local; `openai-like` sends document content to that provider and the docs say so. The update check is off by default. |
 | [qmd](https://github.com/tobi/qmd) (read 2026-09-29) | MIT | 2026-09-09 | Yes, after the first run downloads its models | No telemetry found: GitHub code search of the repository for "telemetry", "posthog", "analytics" and "sentry" on 2026-09-29 hit only fine-tuning data, test documents and a substring match, and the same search of [node-llama-cpp](https://github.com/withcatai/node-llama-cpp) (MIT), which runs its models, found nothing. The first run downloads three GGUF models from Hugging Face into `~/.cache/qmd/models/`, and `qmd pull` checks them against Hugging Face again. Its HTTP MCP server binds `localhost` unless you pass `--host` or set `QMD_HOST`. |
 | [zg (zvec-grep)](https://github.com/zvec-ai/zvec-grep) (npm `@zvec/zvec-grep` 0.2.2, run 2026-09-30) | Apache-2.0 | 2026-09-30 | Yes, after the first index downloads its embedding model | No telemetry found in the package itself: a string search of the installed 0.2.2 package (not its 192 dependencies) for "telemetry", "posthog", "analytics", "sentry", "segment.io" and "mixpanel" on 2026-09-30 found nothing; its model downloader fetches from `huggingface.co`. Traffic was not watched. `zg install` writes MCP entries into agent config files (targets include `all` and `auto`) and can start a local server; see below. |
+| [PageIndex](https://github.com/VectifyAI/PageIndex) (read 2026-10-07; PyPI `pageindex` 0.2.10 per its `pyproject.toml`) | MIT | 2026-10-07 | Only with a local model; see below | No telemetry dependency found: a search of the repository for "telemetry", "posthog", "sentry" and "analytics" on 2026-10-07 found a comment saying its agent runs send no traces, and the code sets `tracing_disabled=True` for them. It sets `LITELLM_LOCAL_MODEL_COST_MAP` so LiteLLM does not fetch its model list at import. **Every index and chat call goes to the model you configure;** the README's quickstart uses an OpenAI key. |
 
 Paperless-ngx AI details (`docs/configuration.md#ai` in the
 [repository](https://github.com/paperless-ngx/paperless-ngx), read 2026-09-24): embeddings can use a
@@ -74,6 +75,17 @@ MCP server; its default embedding model, `potion-code-16m-v2`, is small enough t
   edits it underneath them races the writer. Install the package on its own (for example
   `npm install --prefix ~/.local/share/zg @zvec/zvec-grep@0.2.2`) and add an MCP entry by hand
   where you want one.
+
+PageIndex retrieves without vectors. It builds a tree of a long document's sections, and a model
+reasons over that tree to find the pages that answer a question, with no chunking and no vector
+store ([README](https://github.com/VectifyAI/PageIndex), read 2026-10-07). Its local mode keeps the
+index in a local directory, but "local" there means the index, not the model: the quickstart
+sends document text to OpenAI to build and search the tree. **Pairing it with any hosted LLM key
+sends your document to that provider, so it is not zero retention.** Model calls go through LiteLLM,
+which can address a local Ollama model, so test it with a local model only. The local-model route
+itself was not tested, so the table's "Only with a local model" is [UNVERIFIED], as is whether a 9B
+local model builds a usable tree. Its PageIndex Cloud mode moves indexing and
+storage to the vendor; leave it off for private files.
 
 ## 2. Parsing and OCR (not recommended until defaults are verified)
 
@@ -148,6 +160,18 @@ the weights license.
 | nomic-embed-text-v2-moe | Apache-2.0 | Newer multilingual version. |
 | BAAI/bge-m3 | MIT | Dense, sparse and multi-vector in one model; multilingual; recommended by Paperless-ngx's maintainers for multilingual archives. |
 | google/embeddinggemma-300m | **Gemma license, not OSI**, with a Prohibited Use Policy | Check that policy before regulated or client-facing use. |
+| google/embeddinggemma-2 (read 2026-10-07) | Apache-2.0 | 740M parameters; text, code, images, audio and video in one 768-dimension space. **Candidate, not yet tested.** See below. |
+
+[EmbeddingGemma 2](https://huggingface.co/google/embeddinggemma-2) (model card and Hugging Face API,
+read 2026-10-07) is Apache-2.0, not gated, and unlike `embeddinggemma-300m` it does not carry the
+Gemma license. Its card describes a 270M text backbone with vision (170M) and audio (300M) encoders
+that load only when needed, an 8,192-token context, and Matryoshka truncation to 512, 256 or 128
+dimensions. Ollama's [tags page](https://ollama.com/library/embeddinggemma-2/tags) (read 2026-10-07)
+lists `embeddinggemma-2:270m` (text only) at 378 MB and the full `embeddinggemma-2:740m` at 1.3 GB, and
+states a 256K context window, which disagrees with the card; trust the card until measured. Either
+size should fit on a 12 GB card beside a 9B chat model at `Q4_K_M` (about 5.7 GB in VRAM, see
+[models](../models/README.md)), which would keep search over saved articles on the machine. That fit
+and the retrieval quality were not measured here. [UNVERIFIED]
 
 ## 4. Rerankers
 
@@ -262,6 +286,34 @@ Start PrivateGPT with those set, then open its demo workbench at `/ui`, upload a
 ask a question; answers come with citations. The README's ingestion API endpoint and command for a
 whole folder were not read, so use the `/ui` upload or the README's own instructions. [UNVERIFIED]
 
+## 8. Web search for a local-model lane
+
+A local model that needs current facts needs a search backend, and a hosted agent-search API sees
+every query. Cloudflare's [Web Search API](https://blog.cloudflare.com/introducing-web-search-api/)
+(announced 2026-10-02, beta, read 2026-10-07) is one example: it forwards queries to one of three
+providers, Ceramic.ai, Exa or Linkup, and the post says Cloudflare "will identify partners supporting
+Zero Data Retention (ZDR)," so retention was not stated per provider at launch. Read each provider's
+own retention terms before you send it anything private; they were not read for this page.
+
+The private alternative is a self-hosted [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0,
+last push 2026-10-07, read that day), a metasearch engine that queries public engines for you.
+What its shipped `searx/settings.yml` (read 2026-10-07) sets by default:
+
+- It binds `127.0.0.1:8888`, so only the machine itself can reach it.
+- Only the `html` result format is on. An agent needs JSON: add `json` to `search.formats`.
+- `secret_key` ships as a placeholder; set `SEARXNG_SECRET` before first start.
+- **Your queries still leave the machine.** Each one goes to the upstream engines you enable, from
+  your own IP address. What SearXNG removes is the account, the profile and the single provider that
+  sees all of them; it does not make a search private from the engines.
+- No telemetry found: a GitHub code search of the repository for "telemetry", "posthog" and "sentry"
+  on 2026-10-07 hit only `searx/engines/luxxle.py` (it scrapes a `telemetryData` value from the
+  Luxxle results page) and `utils/lib_govm.sh` (it runs `govm telemetry off`). A third hit,
+  `searx/static/themes/simple/manifest.json`, matched "isEntry", not "sentry". That is a code
+  search, not an audit.
+
+Treat search results as untrusted input. A page can carry instructions aimed at the model that reads
+it, so a model that reads search results should not also hold tools that write, send or spend.
+
 ## Gaps
 
 - RAGFlow and LanceDB absence-of-telemetry claims are shallow checks, so both are unrecommended.
@@ -271,3 +323,4 @@ whole folder were not read, so use the `/ui` upload or the README's own instruct
 - No retrieval-quality benchmark was run for any stack here. The zg notes above are two queries,
   not a benchmark, and its dependencies were not searched for telemetry.
 - qmd was read, not run; its telemetry finding is a code search, not an audit.
+- EmbeddingGemma 2, PageIndex and SearXNG were read on 2026-10-07, not run.

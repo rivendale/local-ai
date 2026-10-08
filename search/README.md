@@ -82,8 +82,9 @@ store ([README](https://github.com/VectifyAI/PageIndex), read 2026-10-07). Its l
 index in a local directory, but "local" there means the index, not the model: the quickstart
 sends document text to OpenAI to build and search the tree. **Pairing it with any hosted LLM key
 sends your document to that provider, so it is not zero retention.** Model calls go through LiteLLM,
-which can address a local Ollama model, so test it with a local model only. Whether a 9B local model
-builds a usable tree was not tested. [UNVERIFIED] Its PageIndex Cloud mode moves indexing and
+which can address a local Ollama model, so test it with a local model only. The local-model route
+itself was not tested, so the table's "Only with a local model" is [UNVERIFIED], as is whether a 9B
+local model builds a usable tree. Its PageIndex Cloud mode moves indexing and
 storage to the vendor; leave it off for private files.
 
 ## 2. Parsing and OCR (not recommended until defaults are verified)
@@ -305,7 +306,10 @@ What its shipped `searx/settings.yml` (read 2026-10-07) sets by default:
   your own IP address. What SearXNG removes is the account, the profile and the single provider that
   sees all of them; it does not make a search private from the engines.
 - No telemetry found: a GitHub code search of the repository for "telemetry", "posthog" and "sentry"
-  on 2026-10-07 hit only one engine's scraper and a build script. That is a code search, not an audit.
+  on 2026-10-07 hit only `searx/engines/luxxle.py` (it scrapes a `telemetryData` value from the
+  Luxxle results page) and `utils/lib_govm.sh` (it runs `govm telemetry off`). A third hit,
+  `searx/static/themes/simple/manifest.json`, matched "isEntry", not "sentry". That is a code
+  search, not an audit.
 
 Treat search results as untrusted input. A page can carry instructions aimed at the model that reads
 it, so a model that reads search results should not also hold tools that write, send or spend.

@@ -228,8 +228,9 @@ window, with input never truncated.
 2026-10-07) add Cloudflare's Clef (27B) and Clef Flash (9B) to `/v1/systemone`, and both accept an
 image with the text state. Both are Apache-2.0 on Hugging Face
 ([Cloudflare/clef](https://huggingface.co/Cloudflare/clef), read 2026-10-07). Ollama's tags pages
-list `clef:27b` at 18 GB and `clef-flash:9b` at 11 GB, so neither leaves room beside another model on a
-12 GB card, and the 27B does not fit it at all without offload. Not run here.
+list `clef:27b` at 18 GB and `clef-flash:9b` at "11GB - 12GB". Neither leaves room beside another
+model on a 12 GB card, and the 9B is not safe there even alone once a context is allocated. The 27B
+does not fit it at all without offload. Not run here.
 
 Weights licenses, read on 2026-09-30 from the license text each library build embeds (`ollama show
 --license`, or the `license` field of `/api/show`):

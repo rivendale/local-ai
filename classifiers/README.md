@@ -352,6 +352,8 @@ What it shows, and what it does not:
   same labels; that is not checkable from the data, and determinism would not show accuracy anyway.
 - **Not measured:** calibration of the returned probabilities, long inputs such as whole emails,
   and real traffic. The items were written by the same agent that ran the test.
+- **Since then:** the maintainer removed `qwen3.5:9b-q4_K_M` and its fine-tunes on 2026-10-21 for
+  provenance. See [models, section 3](../models/README.md#3-choosing-the-model-for-a-private-lane-2026-10-21).
 
 ## Contrastive Language Models (CLM): not measured
 

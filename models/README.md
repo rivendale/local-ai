@@ -361,15 +361,16 @@ sections 1 and 2 that name Qwen3.5 are kept as they were taken.
 Quality and license are not the only tests. Ask who trained the weights, and whether your policy
 lets you run them on this data. The maintainer removed `qwen3.5:9b-q4_K_M` and every fine-tune
 built on a Qwen3.5 base. That was a provenance decision, made after a US federal FASCSA exclusion
-order dated 2026-07-24 and published 2026-10-20 that removes DeepSeek products from civilian
-agencies. [UNVERIFIED: the order was not read for this page.] The order does not name Qwen. Removing
+order that removes DeepSeek products from civilian agencies (DHS notice, 91 FR 66346, Document
+2026-21447, published 2026-10-20, https://www.federalregister.gov/d/2026-21447; read 2026-10-21).
+The notice names DeepSeek only; it does not name Qwen. Removing
 Qwen goes beyond it and is the maintainer's own policy, not a legal requirement. The Qwen rows in
 section 2 stay as a catalog, because your policy may differ.
 
 ### Measure on your own synthetic tasks before you switch
 
 The maintainer compared the two models on 2026-10-21 with 20 synthetic triage items, answers
-written first. The tasks: classify a message, extract dates, summarize a statement-like text, and
+written first. This was a local run; its per-item rows are not published here. The tasks: classify a message, extract dates, summarize a statement-like text, and
 flag a secret. Settings were the same for both: `"think": false`, temperature 0, seed 0,
 `num_ctx` 2048, `num_predict` 256.
 

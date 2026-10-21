@@ -131,7 +131,8 @@ latency. The maintainer measured it on 2026-09-26 (Ollama 0.34.3, Windows, RX 67
 | Thinking on (the default) | 10.6 to 10.7 s | 533 | `{"label": "phishing"}` |
 | `"think": false` | 0.22 to 0.25 s | 8 | `{"label": "phishing"}` |
 
-Same answer, more than 40 times faster. Generation ran at 50 to 63 tokens per second either way; the
+Same answer, more than 40 times faster. The same `"think": false` request shape also works on
+`gemma4:e4b-it-q4_K_M` (section 3). Generation ran at 50 to 63 tokens per second either way; the
 difference is the 525 thinking tokens. The first call of a session added 12.0 s of model load.
 
 Two cautions from the same machine:
@@ -186,8 +187,8 @@ while the plain `gemma4:e2b` is 7.2 GB and `gemma4:12b` is 7.6 GB. On a 16 GB CP
 `-it-qat` builds leave the most room. Ollama's [phi4-mini tags page](https://ollama.com/library/phi4-mini/tags)
 lists `phi4-mini` at 2.5 GB. The gemma4 page also lists `gemma4:cloud` and `gemma4:31b-cloud`,
 which run on Ollama's servers; local-only mode (section 1) keeps them off. Licenses were not read for
-the larger Gemma 4 sizes on that page. None of these models was run here. [UNVERIFIED speed and
-quality]
+the larger Gemma 4 sizes on that page. Of these, only Gemma 4 E4B has been run here, as
+`gemma4:e4b-it-q4_K_M` (section 3). [UNVERIFIED speed and quality for the others]
 
 The maintainer compared [MiMo-V2.6-Distill-Qwen-9B](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B)
 at `Q8_0` with Qwen3.5-9B at `Q4_K_M` on 2026-09-24, on the RX 6700 XT: five hand-written tasks
@@ -198,7 +199,8 @@ switch; they do not rank the two.
 
 The newest Qwen and GLM generations did not show a small dense chat model except Qwen3.5-4B and
 9B from the previous generation. Gemma 4 E2B-it and Phi-4-mini-instruct, added 2026-09-29, fill that
-gap on license and size, not on measurement. A leaderboard-based "best small model" check was not done
+gap on license and size, not on measurement. Gemma 4 E4B has since been measured on the
+maintainer's own tasks (section 3). A leaderboard-based "best small model" check was not done
 [UNVERIFIED], so the small picks below are "current, licensed, published by the model's own lab,"
 not "measured best."
 
@@ -347,6 +349,95 @@ that as unproven. [UNVERIFIED]
   or Task Manager on the real machine. [UNVERIFIED] Qualcomm's NPU path is a separate,
   vendor-specific route that none of the runtimes above use by default.
 
+## 3. Choosing the model for a private lane, 2026-10-21
+
+A private lane is the one place for text that must never reach an external model. The maintainer
+runs one model there. On 2026-10-21 it changed from `qwen3.5:9b-q4_K_M` to
+`gemma4:e4b-it-q4_K_M`, Google's Gemma 4 E4B (Apache-2.0, section 2). The measurements in
+sections 1 and 2 that name Qwen3.5 are kept as they were taken.
+
+### Provenance is a selection criterion
+
+Quality and license are not the only tests. Ask who trained the weights, and whether your policy
+lets you run them on this data. The maintainer removed `qwen3.5:9b-q4_K_M` and every fine-tune
+built on a Qwen3.5 base. That was a provenance decision, made after a US federal FASCSA exclusion
+order that removes DeepSeek products from civilian agencies (DHS notice, 91 FR 66346, Document
+2026-21447, published 2026-10-20, https://www.federalregister.gov/d/2026-21447; read 2026-10-21).
+The notice names DeepSeek only; it does not name Qwen. Removing
+Qwen goes beyond it and is the maintainer's own policy, not a legal requirement. The Qwen rows in
+section 2 stay as a catalog, because your policy may differ.
+
+### Measure on your own synthetic tasks before you switch
+
+The maintainer compared the two models on 2026-10-21 with 20 synthetic triage items, answers
+written first. This was a local run; its per-item rows are not published here. The tasks: classify a message, extract dates, summarize a statement-like text, and
+flag a secret. Settings were the same for both: `"think": false`, temperature 0, seed 0,
+`num_ctx` 2048, `num_predict` 256.
+
+| Model | Correct | Warm median per item |
+|---|---|---|
+| `qwen3.5:9b-q4_K_M` | 16/20 | 0.57 s |
+| `gemma4:e4b-it-q4_K_M` | 15/20 | 0.39 s |
+
+What it shows, and what it does not:
+
+- **One item apart is within noise.** Twenty items cannot rank two models that close. The run shows
+  that switching did not cost a large drop on these tasks.
+- **Gemma missed 2 of the 5 date items.** Dates are its weak spot here, so the next step tests them
+  (below).
+- **Latency is indicative only.** Qwen always ran first, so order effects are not separated.
+- **Do not compare memory from `/api/ps` across these two.** Ollama reports Gemma E4B's resident
+  size as 0.36 GB, with most of its weights outside that figure. The number is not comparable to
+  Qwen's 5.7 GB.
+- **Check the harness before the result.** Hand-check the first real report against its raw rows.
+  A test fake that always returns the right answer cannot catch a scoring bug.
+
+### The setup: Ollama on Windows, reached from WSL
+
+- Runtime: Ollama on native Windows, with local-only mode on (section 1).
+- GPU: AMD RX 6700 XT, 12 GiB, through Vulkan (section 2).
+- Model: `ollama pull gemma4:e4b-it-q4_K_M`, a 6.6 GB download (digest `dc35e8d9c606`, read
+  2026-10-21). It is the only model installed.
+- Endpoint: `http://127.0.0.1:11434`, from Windows and from WSL in mirrored networking mode
+  (section 2).
+
+### Call shapes verified on Gemma 4 E4B
+
+Both endpoints accept `"think": false` and `"format": "json"` together (maintainer's check,
+2026-10-21). With synthetic text:
+
+```sh
+curl -s http://127.0.0.1:11434/api/generate -d '{
+  "model": "gemma4:e4b-it-q4_K_M",
+  "prompt": "Label this message as spam or not-spam. Answer as JSON {\"label\": ...}. Message: You won a prize, send your password.",
+  "think": false,
+  "format": "json",
+  "stream": false,
+  "options": {"temperature": 0, "seed": 0}
+}'
+
+curl -s http://127.0.0.1:11434/api/chat -d '{
+  "model": "gemma4:e4b-it-q4_K_M",
+  "messages": [{"role": "user", "content": "Return JSON {\"date\": ...} for the date in: Meeting moved to March 3."}],
+  "think": false,
+  "format": "json",
+  "stream": false
+}'
+```
+
+### Next: a date test (planned, not run)
+
+These are pre-registered, so the variants and the held-out split are fixed before any result:
+
+- 60 synthetic date items, 20 of them held out until the variants are chosen.
+- Variants to compare: today's date, weekday and time zone in the prompt; JSON-schema structured
+  output; three few-shot examples; `"think": true` for date items only.
+- **Extract, then resolve.** The model copies the date phrase as written ("next Tuesday"), and
+  deterministic code computes the ISO date. Arithmetic on dates then never depends on the model.
+  This follows the arithmetic caution in section 1.
+
+No results exist yet. When they do, they go here with their date.
+
 ## Gaps
 
 - No leaderboard check for the best small model.
@@ -357,6 +448,7 @@ that as unproven. [UNVERIFIED]
 - Telemetry defaults for the tools in the unverified list are not confirmed.
 - ONNX Runtime's telemetry was read from its docs and its installed library, not watched on the
   wire.
-- Gemma 4 and Phi-4-mini-instruct were not run here.
+- Phi-4-mini-instruct and the Gemma 4 sizes other than E4B were not run here.
+- The date-handling variants in section 3 are planned, not run.
 - DFlash speculative decoding was read from docs and model cards, not run.
 - Not legal advice; license summaries are readings of project pages.

@@ -3,7 +3,7 @@
 **Not legal advice.** This is a plain-language summary of primary sources, written for people
 choosing local AI tools. It is not a substitute for a securities lawyer or compliance consultant.
 Rules, dates and enforcement priorities change; check current status before relying on anything
-here. Everything was read on 2026-09-24.
+here. Everything was read on 2026-09-24, except section 7 (FINRA), researched on 2026-11-01.
 
 **How sources are marked.** Regulatory statements point to sec.gov. Three sec.gov PDFs (the
 Regulation S-P final rule, the withdrawal notice and the FY2026 exam priorities) could not be
@@ -143,7 +143,64 @@ from an aggregator and could not be traced to sec.gov. It is [UNVERIFIED] and no
 other 2025 to 2026 AI-specific SEC rule was found; check the SEC's rulemaking agenda and recent
 risk alerts, because this area moves.
 
-## 7. What a local-first setup helps with, and what it does not
+## 7. FINRA: gen AI guidance and AI agents
+
+FINRA writes rules for its member broker-dealers and their registered people, not for advisers
+that are only SEC-registered. This matters to dual registrants and to advisers affiliated with a
+broker-dealer.
+
+**How this section is sourced.** finra.org could not be reached from the research session on
+2026-11-01 (the network proxy refused it), so neither document below was read. What follows comes
+from web search results that summarize them, mostly law-firm and trade-press pages, and is
+[UNVERIFIED against finra.org]. Nothing from their text is quoted; the notice title is as it appeared
+in a search result. Read both documents before relying on any point.
+
+### Regulatory Notice 24-09 (June 2024)
+
+[Regulatory Notice 24-09](https://www.finra.org/rules-guidance/notices/24-09), "FINRA Reminds
+Members of Regulatory Obligations When Using Generative Artificial Intelligence and Large Language
+Models," dated June 27, 2024 in the summaries. As summarized:
+
+- It creates no new requirements. Existing FINRA rules and securities laws apply to gen AI and
+  large language models as they apply to any other technology.
+- The obligations are the same whether a firm builds its own tool or uses a vendor's.
+- The content standards of Rule 2210 (communications with the public) apply whether a person or a
+  tool wrote the communication.
+- Supervision applies, including the supervision of electronic correspondence, and firms are
+  expected to have policies and procedures covering matters such as data privacy and the
+  reliability of the models they use.
+- It invites firms to talk to FINRA about the supervisory and compliance implications of gen AI
+  tools.
+
+### 2026 Annual Regulatory Oversight Report (December 2025)
+
+FINRA's 2026 Annual Regulatory Oversight Report was released on December 9, 2025, per the
+summaries. No finra.org address for it appeared in the search results, so none is given here. Two
+of the summaries that did appear, neither opened: [Debevoise](https://www.debevoise.com/insights/publications/2025/12/finras-2026-regulatory-oversight-report-continued)
+and [Sidley](https://datamatters.sidley.com/2025/12/16/finra-issues-2026-regulatory-oversight-report/)
+(law firms, not finra.org). As summarized:
+
+- It is described as the first edition with a standalone gen AI section, and the first to discuss
+  **AI agents**: systems that can carry out and complete tasks on a user's behalf with some
+  autonomy.
+- Risks named for agents include acting without a person validating or approving the step, and
+  acting beyond the scope or permissions the user intended.
+- Suggested responses include assessing whether an agent's autonomy raises new regulatory,
+  supervisory or operational issues, building agent-specific supervision, tracking what agents do,
+  and limiting what systems they can reach. Human review of gen AI output is recommended more
+  generally, with accuracy risks such as hallucination and bias named.
+- The report does not prescribe tools; it raises expectations for governance, documentation,
+  testing and accountability.
+
+One blog in the search results claimed specific new agent requirements; the law-firm summaries did
+not support it, so it is not used here.
+
+**For a local-first setup:** running a model or an agent on your own hardware changes where the
+data goes, not these obligations. An agent with tool access is the case the report singles out:
+log every action it takes (as section 8 says for records generally), give it the narrowest access
+that does the job, and keep a person approving anything that leaves the firm.
+
+## 8. What a local-first setup helps with, and what it does not
 
 Saying local AI equals compliance would be its own kind of AI washing.
 
@@ -178,6 +235,6 @@ Saying local AI equals compliance would be its own kind of AI washing.
 
 ## Not covered
 
-State law, FINRA-specific AI guidance, non-SEC federal guidance such as NIST frameworks, and any
-firm-specific procedure. Re-check the compliance dates and rule status against the primary
+State law, FINRA rules beyond the two documents in section 7 (which were not read), non-SEC
+federal guidance such as NIST frameworks, and any firm-specific procedure. Re-check the compliance dates and rule status against the primary
 sources before use.

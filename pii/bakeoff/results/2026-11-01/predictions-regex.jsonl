@@ -15,6 +15,9 @@
 {"id": "pw-allowlist-2", "spans": []}
 {"id": "pw-allowlist-3", "spans": []}
 {"id": "pw-allowlist-4", "spans": []}
+{"id": "bidi-0", "spans": [{"end": 25, "score": 1.0, "start": 13, "type": "SSN"}]}
+{"id": "bidi-1", "spans": [{"end": 26, "score": 1.0, "start": 5, "type": "CARD"}]}
+{"id": "bidi-2", "spans": [{"end": 40, "score": 1.0, "start": 9, "type": "EMAIL"}]}
 {"id": "d0000", "spans": [{"end": 140, "score": 1.0, "start": 130, "type": "EIN"}, {"end": 161, "score": 1.0, "start": 154, "type": "PERSON"}]}
 {"id": "d0001", "spans": [{"end": 182, "score": 1.0, "start": 164, "type": "EMAIL"}, {"end": 141, "score": 1.0, "start": 126, "type": "PHONE"}, {"end": 60, "score": 1.0, "start": 51, "type": "ROUTING"}, {"end": 80, "score": 1.0, "start": 70, "type": "ACCOUNT"}, {"end": 41, "score": 1.0, "start": 37, "type": "PERSON"}]}
 {"id": "d0002", "spans": [{"end": 200, "score": 1.0, "start": 184, "type": "CARD"}]}
@@ -415,6 +418,3 @@
 {"id": "d0397", "spans": [{"end": 139, "score": 1.0, "start": 128, "type": "EIN"}, {"end": 160, "score": 1.0, "start": 153, "type": "PERSON"}]}
 {"id": "d0398", "spans": [{"end": 188, "score": 1.0, "start": 167, "type": "EMAIL"}, {"end": 144, "score": 1.0, "start": 129, "type": "PHONE"}, {"end": 61, "score": 1.0, "start": 52, "type": "ROUTING"}, {"end": 83, "score": 1.0, "start": 71, "type": "ACCOUNT"}, {"end": 42, "score": 1.0, "start": 38, "type": "PERSON"}]}
 {"id": "d0399", "spans": [{"end": 203, "score": 1.0, "start": 184, "type": "CARD"}, {"end": 350, "score": 1.0, "start": 314, "type": "ADDRESS"}]}
-{"id": "d0400", "spans": [{"end": 126, "score": 1.0, "start": 115, "type": "EIN"}, {"end": 149, "score": 1.0, "start": 140, "type": "PERSON"}]}
-{"id": "d0401", "spans": [{"end": 201, "score": 1.0, "start": 185, "type": "CARD"}, {"end": 356, "score": 1.0, "start": 317, "type": "ADDRESS"}]}
-{"id": "d0402", "spans": [{"end": 213, "score": 1.0, "start": 192, "type": "EMAIL"}, {"end": 104, "score": 1.0, "start": 93, "type": "SSN"}, {"end": 184, "score": 1.0, "start": 169, "type": "PHONE"}, {"end": 249, "score": 1.0, "start": 240, "type": "ROUTING"}, {"end": 267, "score": 1.0, "start": 255, "type": "ACCOUNT"}, {"end": 71, "score": 1.0, "start": 61, "type": "DOB"}, {"end": 161, "score": 1.0, "start": 126, "type": "ADDRESS"}, {"end": 45, "score": 1.0, "start": 30, "type": "PERSON"}]}

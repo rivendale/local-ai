@@ -13,11 +13,19 @@ Weights are licensed separately from code and are noted where the research recor
 Treat redaction as risk reduction and measure it on realistic (but synthetic or cleared) samples
 before you rely on it.
 
+**[The bake-off](bakeoff/README.md)** (run 2026-11-01) is a reproducible, offline way to do that:
+a seeded synthetic financial-services dataset with hard cases (look-alike separators, zero-width
+characters, finance-word names, numbers that are not personal), a span scorer that also counts
+leaked characters, and adapters for a regex baseline, Presidio, GLiNER, the OpenAI Privacy Filter
+and a local LLM. Only the regex baseline and Presidio were run. Its numbers are measurements on
+synthetic data, not rankings of the tools. It also covers what redaction leaves behind: the
+quasi-identifiers that can still re-identify someone.
+
 ## At a glance
 
 | Project | License | Last push | Offline and telemetry as recorded |
 |---|---|---|---|
-| [Presidio](https://github.com/data-privacy-stack/presidio) (formerly `microsoft/presidio`) | MIT | 2026-09-24 | No outbound calls found in its analyzer or anonymizer library code (GitHub code search for "telemetry" and "requests.post", read 2026-09-24; the only hits are in docs, samples and e2e tests). spaCy language models are downloaded at install time. The Azure AI Language integration is optional. |
+| [Presidio](https://github.com/data-privacy-stack/presidio) (formerly `microsoft/presidio`) | MIT | 2026-09-24 | No outbound calls found in its analyzer or anonymizer library code (GitHub code search for "telemetry" and "requests.post", read 2026-09-24; the only hits are in docs, samples and e2e tests). spaCy language models are downloaded at install time. The Azure AI Language integration is optional. **Its email recognizer fetches the public suffix list on first use** through tldextract (publicsuffix.org, then raw.githubusercontent.com), seen in the [bake-off](bakeoff/README.md) on 2026-11-01; set `TLDEXTRACT_PUBLIC_SUFFIX_LIST_URLS` to an empty string to use tldextract's bundled copy. |
 | [DataFog](https://github.com/DataFog/datafog-python) | MIT | 2026-09-24 | Project's own framing: zero network calls. |
 | [scrubadub](https://github.com/LeapBeyond/scrubadub) | Apache-2.0 | **2023-09-01, dormant** | Local, no network calls in the core package. |
 | [LLM Guard](https://github.com/protectai/llm-guard) | MIT | 2026-07-08, **archived** | Local scanners. Read-only repo. |
@@ -63,6 +71,10 @@ accuracy limits; restic is covered in section 5.
   patterns with checksums, which reduces but does not remove false positives. The pages read give
   no overall precision or recall figure and no "do not rely on this alone" warning. Take the missing
   warning as a gap.
+- **Measured here on synthetic data** (2.2.366 with `en_core_web_sm`, defaults, 2026-11-01): it
+  touched every plain SSN but 6 of 36 written with look-alike dashes, full-width digits,
+  zero-width or bidi characters, and masked every trade date and over half of the CUSIP characters. Numbers and caveats are in the
+  [bake-off](bakeoff/README.md#results-2026-11-01).
 - Languages: multiple are supported; no list was read. [UNVERIFIED]
 
 ### GLiNER and GLiNER-based PII models
@@ -74,6 +86,31 @@ accuracy limits; restic is covered in section 5.
   was last modified 2024-04-20 and has no precision or recall numbers. Because it was trained on
   synthetic data, test it on real-shaped samples, and look for a newer fine-tune, before trusting it on names,
   addresses or account numbers.
+- Other PII fine-tunes, read 2026-11-01: the GLiNER README (commit `2dc5de2`) names
+  `knowledgator/gliner-stream-pii-v1.0` for streaming PII detection; `nvidia/gliner-PII` was seen
+  only in search results. Neither card was read, so licenses and sizes are [UNVERIFIED]. The
+  [bake-off](bakeoff/README.md) has a GLiNER adapter that was not run.
+
+### OpenAI Privacy Filter
+
+Read on 2026-11-01 from the code repository
+[openai/privacy-filter](https://github.com/openai/privacy-filter) (commit `f7f00ca`, 2026-04-22).
+The Hugging Face card and OpenAI's announcement could not be reached from the session.
+
+- **What it is:** a token-classification model that labels spans in one pass, in 8 categories:
+  account numbers, addresses, emails, person names, phone numbers, URLs, dates and secrets. The
+  README gives 1.5B parameters total, 50M active, and a 128,000-token context.
+- **License:** Apache-2.0 for the code (LICENSE file). The README says the model is Apache-2.0 and
+  points to `huggingface.co/openai/privacy-filter` for the weights; the weights' license was not
+  read there. [UNVERIFIED]
+- **Network default:** if no checkpoint is found at `OPF_CHECKPOINT` or `~/.opf/privacy_filter`,
+  the `opf` tool downloads one from Hugging Face (`opf/_common/checkpoint_download.py`). Download
+  it yourself, record its revision, and run with the network off. No telemetry was searched for.
+- **Its own caveats:** "a redaction and data minimization aid, not an anonymization, compliance,
+  or a safety guarantee." Its labels have no SSN or tax ID category, it names financial workflows
+  as a setting needing extra caution, and it lists missed uncommon names and over-redaction of
+  public entities among its failure modes.
+- Not run here: see the [bake-off](bakeoff/README.md).
 
 ### spaCy
 
@@ -311,6 +348,8 @@ copied from the research notes, except `--no-verification`, which the notes reco
 - Telemetry was not audited in the source of GLiNER, spaCy, the OCR engines or restic. Presidio's
   is a code search, not a full audit.
 - DataFog benchmark numbers were not read.
+- The bake-off ran only the regex baseline and Presidio; GLiNER, the OpenAI Privacy Filter and a
+  local LLM have adapters but no results.
 - Whisper model weight licenses were not checked.
 - Text-to-speech was run with no network, not watched with one, so what ONNX Runtime sends when a
   network is present is unmeasured.

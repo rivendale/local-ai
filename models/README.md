@@ -159,7 +159,9 @@ built or tested for this repo.]
 
 ## 2. Models by hardware
 
-Current releases, from the Hugging Face API, read 2026-09-24:
+Current releases, from the Hugging Face API, read 2026-09-24. The Date column is the date that API
+returned, which can be earlier than the public release; see "Release dates, rechecked 2026-11-01"
+below the table.
 
 | Model | Date | Weights license |
 |---|---|---|
@@ -178,6 +180,25 @@ Current releases, from the Hugging Face API, read 2026-09-24:
 
 The [Qwen3.8-27B card](https://huggingface.co/Qwen/Qwen3.8-27B) (read 2026-09-24) describes a 27B
 dense model with a 262,144-token native context.
+
+**Release dates, rechecked 2026-11-01.** Hugging Face could not be reached from the session, so
+the table was checked against the labs' GitHub repositories instead:
+
+- **Qwen.** The News list in the [Qwen3.8 README](https://github.com/QwenLM/Qwen3.8) (commit
+  `2ea10dc`, 2026-08-17) dates public availability as: Qwen3.5-9B, 4B, 2B and 0.8B on 2026-03-02
+  (not 2026-02-27); Qwen3.8-2.4T-A95B on 2026-08-12; Qwen3.8-27B on 2026-08-14 (not 2026-08-05).
+  It does not mention Qwen3.8-Flash-Next, whose date and license stay [UNVERIFIED]. The README says
+  the weights' license file ships with the weights, so the license column still rests on the
+  Hugging Face reads of 2026-09-24; the repository's own Apache-2.0 LICENSE covers its code.
+- **Gemma 4.** Google's [gemma library](https://github.com/google-deepmind/gemma) (commit
+  `9e1f741`, 2026-10-15) added Gemma 4 in its 4.0.0 release, dated 2026-04-17 in its CHANGELOG, and
+  ships checkpoints for four sizes: E2B, E4B, 26B-A4B and 31B, each pretrained and
+  instruction-tuned. It has no 12B. Press coverage in web search results dates the Gemma 4 launch
+  to 2026-04-02, with those four sizes under Apache-2.0 [UNVERIFIED against Google's blog], so the
+  2026-03-02 date above for E2B and E4B is likely a repository date, not the launch. A Gemma 4
+  12B-it at `google/gemma-4-12B-it` appears in search results with launch dates of June 3 and
+  June 9, 2026, which disagree with each other and with the 2026-05-23 above [UNVERIFIED]. Its
+  Apache-2.0 license rests on the Hugging Face tags read 2026-09-29.
 
 The three Gemma 4 models above are Apache-2.0 and not gated, unlike `embeddinggemma-300m` in
 [search](../search/README.md), which carries the Gemma license. Ollama's
@@ -367,6 +388,28 @@ The notice names DeepSeek only; it does not name Qwen. Removing
 Qwen goes beyond it and is the maintainer's own policy, not a legal requirement. The Qwen rows in
 section 2 stay as a catalog, because your policy may differ.
 
+**What the policy covers, as decided on 2026-10-21.** The private lane only. Within it, the
+Qwen3.5 chat model the lane ran (`qwen3.5:9b-q4_K_M`) and every fine-tune built on a Qwen3.5 base.
+Of the models this repository names, that includes Tev1-4B-experimental (on Qwen3.5-4B),
+MiMo-V2.6-Distill-Qwen-9B and Bespoke-Nimble-9B (on Qwen3.5-9B); see
+[classifiers](../classifiers/README.md).
+
+As written, it does **not** cover other Qwen generations or roles from the same lab, which this
+repository still lists as catalog entries:
+
+- Qwen3-Embedding and Qwen3-Reranker (0.6B, 4B and 8B), in [search](../search/README.md) and the
+  hardware tables above. The Qwen team built them on its Qwen3 foundation models by LoRA
+  fine-tuning and released them under Apache-2.0 on 2025-06-05, per its
+  [blog source](https://github.com/QwenLM/qwenlm.github.io/blob/main/content/blog/qwen3-embedding/index.md)
+  (commit `1f89f8c`, read 2026-11-01).
+- qmd's query-expansion model, a fine-tune of Qwen3-1.7B, and its default reranker
+  Qwen3-Reranker-0.6B ([search](../search/README.md)).
+- Qwen3-8B as the encoder under CLM ([classifiers](../classifiers/README.md)).
+- Qwen2.5-Coder, Qwen3-Coder and the Qwen3.8 models in the hardware tables.
+
+If the reason for the policy is who trained the weights, it applies to these as much as to
+Qwen3.5. Whether to widen it to them is an open decision, not a conclusion of this page.
+
 ### Measure on your own synthetic tasks before you switch
 
 The maintainer compared the two models on 2026-10-21 with 20 synthetic triage items, answers
@@ -442,7 +485,9 @@ No results exist yet. When they do, they go here with their date.
 
 - No leaderboard check for the best small model.
 - On-disk GGUF sizes not read from files, except the Tev1 `Q6_K` figure.
-- License for Qwen3.8-Flash-Next not recorded.
+- License and release date for Qwen3.8-Flash-Next not recorded.
+- The 2026-11-01 recheck of Qwen and Gemma 4 dates used the labs' GitHub repositories and search
+  results, not the Hugging Face cards or the labs' blogs, which could not be reached.
 - ROCm on Windows (TheRock or AMD's PyTorch packages) and ZLUDA were not tried on an RDNA2 card.
 - Image generation was not tried on the AMD card.
 - Telemetry defaults for the tools in the unverified list are not confirmed.

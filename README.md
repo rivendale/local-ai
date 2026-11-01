@@ -22,7 +22,8 @@ dated and linked to the source it was read from.
   says how the maintainer chose the one model in its private lane.
 - [`classifiers/`](classifiers/README.md): a small local model that picks one option from a list, for routing and triage.
 - [`search/`](search/README.md): private document search and question answering over your own files.
-- [`pii/`](pii/README.md): detecting, redacting and pseudonymizing personal information; local speech and OCR.
+- [`pii/`](pii/README.md): detecting, redacting and pseudonymizing personal information, with an offline
+  [bake-off](pii/bakeoff/README.md) of detectors on synthetic data; local speech and OCR.
 - [`advisers.md`](advisers.md): notes for regulated firms (for example SEC-registered investment advisers) on what
   a local-first setup helps with and what it does not. Not legal advice.
 

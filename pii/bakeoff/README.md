@@ -150,6 +150,10 @@ What the numbers show, on this data:
   characters leak. Across the dataset, spans with look-alike dashes leak 57%,
   full-width digits 41%, zero-width characters 35%. An email with a zero-width
   space before the `@` was missed while its domain was flagged as a URL.
+  By type (counted from `predictions-presidio.jsonl`): it touched 68 of 68
+  plain SSNs but 6 of 35 written with a look-alike, full-width or zero-width
+  character, 38 of 38 plain card numbers but 12 of 21 hard ones, and 60 of 60
+  plain EINs but 9 of 24 hard ones.
 - **Over-redaction is mostly dates.** Presidio's `DATE_TIME` flags every date,
   so all trade and filing dates and 84% of year characters are masked, plus
   57% of CUSIP characters and 30% of form-number characters. For a redactor

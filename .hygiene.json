@@ -1,0 +1,12 @@
+{
+  "_comment": "Schema: rivendale/opensource tools/hygiene/README.md. Keys starting with _ are comments.",
+  "stale_pattern": "\\b(?:checked|rechecked|verified|reviewed|read|as of)[:\\s]+(?:on\\s+)?(\\d{4}-\\d{2}-\\d{2})\\b",
+  "stale_globs": ["**/*.md"],
+  "stale_exclude": [{"glob": "pii/bakeoff/results/**", "why": "dated run results, not claims about now"}],
+  "root_safety": [
+    "python3 pii/bakeoff/generate.py --check",
+    "python3 pii/bakeoff/score.py --self-check",
+    "python3 pii/bakeoff/run.py --adapters regex --out /tmp/bakeoff --bootstrap 200",
+    "python3 -m unittest discover -s pii/bakeoff/tests"
+  ]
+}

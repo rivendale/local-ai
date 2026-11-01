@@ -34,4 +34,7 @@ checkout and the linked source dates, rather than a summary from an older sessio
 Keep project-specific state and tool readiness in the project that uses this
 guidance; this repository does not certify an installation or a deployed service.
 
+CI: [`pii-bakeoff.yml`](.github/workflows/pii-bakeoff.yml) runs the bake-off's offline checks, and
+[`hygiene.yml`](.github/workflows/hygiene.yml) runs the shared rivendale hygiene check, configured in [`.hygiene.json`](.hygiene.json).
+
 MIT licensed. Third-party projects keep their own licenses; read each one before you use it.

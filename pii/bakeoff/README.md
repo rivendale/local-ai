@@ -17,7 +17,7 @@ Built and run on 2026-11-01. The results are in
 | File | What it does |
 |---|---|
 | [`generate.py`](generate.py) | Seeded generator for the dataset. Standard library only. |
-| [`data/synthetic_v1.jsonl`](data/synthetic_v1.jsonl) | The fixed dataset: 420 documents, 1,750 gold spans, 1,796 decoys. |
+| [`data/synthetic_v1.jsonl`](data/synthetic_v1.jsonl) | The fixed dataset: 420 documents, 1,738 gold spans, 1,786 decoys. |
 | [`score.py`](score.py) | Scorer: span precision, recall and F1, leaked characters, bootstrap intervals. Has `--self-check`. |
 | [`run.py`](run.py) | Runs adapters over the dataset and writes `results.json`, `results.md` and raw predictions. |
 | [`adapters/`](adapters/) | One module per detector, with a common `load()` and `predict(text)` interface. |
@@ -140,8 +140,8 @@ What the numbers show, on this data:
 
 - **The regex baseline is perfect on the structured types and weak on
   names.** It finds every SSN, EIN, account, routing, card, phone, email,
-  address and birth date, including every look-alike, full-width and
-  zero-width variant, and masks no decoy. That is expected: it was written
+  address and birth date, including every look-alike, full-width,
+  zero-width and bidi variant, and masks no decoy. That is expected: it was written
   next to the generator and tuned to its formats, so read it as a ceiling for
   patterns on these formats, not as a regex result you would get on real text.
   It finds 28% of names (only those after an honorific or in a `Name:` field),
@@ -150,23 +150,24 @@ What the numbers show, on this data:
   characters, and masks 40% of decoy characters.** Untyped recall is 86%, yet
   20% of gold characters stay in clear, because many detections cover part of
   a value: addresses leak 47% of their characters (a city found, the street
-  left), SSNs 28% and EINs 29%. It has no EIN type; EINs were caught, when they
+  left), SSNs 29% and EINs 29%. It has no EIN type; EINs were caught, when they
   were, as dates, phone numbers or driver's licenses.
 - **Look-alike and hidden characters still get through Presidio's defaults.**
   On the twelve pw-redact-core cases, untyped recall is 42% and 70% of
   characters leak. Across the dataset, spans with look-alike dashes leak 57%,
-  full-width digits 41%, zero-width characters 35%. An email with a zero-width
+  full-width digits 41%, zero-width characters 34%, and the three bidi spans
+  58%. An email with a zero-width
   space before the `@` was missed while its domain was flagged as a URL.
-  By type (counted from `predictions-presidio.jsonl`): it touched 68 of 68
-  plain SSNs but 6 of 35 written with a look-alike, full-width or zero-width
-  character, 38 of 38 plain card numbers but 12 of 21 hard ones, and 60 of 60
-  plain EINs but 9 of 24 hard ones.
+  By type (counted from `predictions-presidio.jsonl`): it touched 67 of 67
+  plain SSNs but 6 of 36 written with a look-alike, full-width, zero-width or
+  bidi character, 37 of 37 plain card numbers but 13 of 22 hard ones, and 60
+  of 60 plain EINs but 9 of 23 hard ones.
 - **Over-redaction is mostly dates.** Presidio's `DATE_TIME` flags every date,
   so all trade and filing dates and 84% of year characters are masked, plus
   57% of CUSIP characters and 30% of form-number characters. For a redactor
   feeding a financial model, masking trade dates and CUSIPs removes facts the
   model needs.
-- **Case changes names.** Presidio found 19% of lowercase names and 32% of
+- **Case changes names.** Presidio found 19% of lowercase names and 33% of
   uppercase names, against 89% of names after an honorific.
 
 These are single runs of deterministic code; the intervals describe document

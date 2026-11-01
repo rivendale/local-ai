@@ -72,8 +72,8 @@ accuracy limits; restic is covered in section 5.
   no overall precision or recall figure and no "do not rely on this alone" warning. Take the missing
   warning as a gap.
 - **Measured here on synthetic data** (2.2.366 with `en_core_web_sm`, defaults, 2026-11-01): it
-  touched every plain SSN but 6 of 35 written with look-alike dashes, full-width digits or
-  zero-width characters, and masked every trade date and over half of the CUSIP characters. Numbers and caveats are in the
+  touched every plain SSN but 6 of 36 written with look-alike dashes, full-width digits,
+  zero-width or bidi characters, and masked every trade date and over half of the CUSIP characters. Numbers and caveats are in the
   [bake-off](bakeoff/README.md#results-2026-11-01).
 - Languages: multiple are supported; no list was read. [UNVERIFIED]
 

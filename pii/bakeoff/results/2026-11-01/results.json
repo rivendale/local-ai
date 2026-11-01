@@ -1,0 +1,1393 @@
+{
+  "adapters": {
+    "presidio": {
+      "adapter": "presidio",
+      "presidio-analyzer": "2.2.366",
+      "recognizers": "Presidio defaults, English",
+      "spacy": "3.8.18",
+      "spacy_model": "en_core_web_sm 3.8.0",
+      "tldextract": "5.4.0",
+      "tldextract_suffix_list": "bundled snapshot",
+      "type_map": {
+        "ABA_ROUTING_NUMBER": "ROUTING",
+        "CREDIT_CARD": "CARD",
+        "DATE_TIME": "DOB",
+        "EMAIL_ADDRESS": "EMAIL",
+        "LOCATION": "ADDRESS",
+        "PERSON": "PERSON",
+        "PHONE_NUMBER": "PHONE",
+        "US_BANK_NUMBER": "ACCOUNT",
+        "US_ITIN": "SSN",
+        "US_SSN": "SSN"
+      },
+      "wall_seconds_all_docs": 4.08
+    },
+    "regex": {
+      "adapter": "regex",
+      "dependencies": "Python standard library only",
+      "version": "1",
+      "wall_seconds_all_docs": 0.03
+    }
+  },
+  "dataset": {
+    "decoys": 1796,
+    "docs": 420,
+    "file": "synthetic_v1.jsonl",
+    "generator_seed": 20261101,
+    "gold_spans": 1750,
+    "sha256": "09292cfd9d021487f0672ff6049b299b46c64c17cfc66235fcbcf7f1d7082ac1"
+  },
+  "date": "2026-11-01",
+  "environment": {
+    "bakeoff_dir_dirty": true,
+    "code_sha256": "55ea3021bdcc9e13bedf023fb7646e0170ced846cdd56ee7d355d6b7e8c602d9",
+    "platform": "Linux x86_64",
+    "python": "3.13.18",
+    "repo_commit": "06656031766bfa4dcd5fe0a4a1317c717180b78a"
+  },
+  "not_run": {
+    "gliner": "pass revision=<Hugging Face commit SHA> so the result names the weights it used. huggingface.co was not reachable from this session (proxy refused the connection), so no weights could be downloaded.",
+    "local_llm": "pass model=<local model tag>; no default model is assumed. No Ollama or llama.cpp endpoint was running on this machine.",
+    "openai_privacy_filter": "pass checkpoint=<local directory>; without one opf downloads weights from Hugging Face. huggingface.co was not reachable from this session (proxy refused the connection), so no weights could be downloaded."
+  },
+  "results": {
+    "presidio": {
+      "bootstrap": {
+        "resamples": 1000,
+        "seed": 0,
+        "unit": "document"
+      },
+      "ci95": {
+        "decoy_masked_by_kind.AMOUNT": [
+          0.0,
+          0.0095
+        ],
+        "decoy_masked_by_kind.CUSIP": [
+          0.4922,
+          0.6562
+        ],
+        "decoy_masked_by_kind.DATE": [
+          1.0,
+          1.0
+        ],
+        "decoy_masked_by_kind.FIN_TERM": [
+          0.1042,
+          0.1531
+        ],
+        "decoy_masked_by_kind.FORM": [
+          0.2472,
+          0.3528
+        ],
+        "decoy_masked_by_kind.PERCENT": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.YEAR": [
+          0.7799,
+          0.8925
+        ],
+        "overall.decoy_masked_rate": [
+          0.3826,
+          0.4164
+        ],
+        "overall.exact.f1": [
+          0.3243,
+          0.3573
+        ],
+        "overall.exact.precision": [
+          0.2361,
+          0.2644
+        ],
+        "overall.exact.recall": [
+          0.5113,
+          0.5559
+        ],
+        "overall.leak_rate": [
+          0.1832,
+          0.2133
+        ],
+        "overall.overlap.f1": [
+          0.3755,
+          0.4108
+        ],
+        "overall.overlap.precision": [
+          0.2745,
+          0.3058
+        ],
+        "overall.overlap.recall": [
+          0.5888,
+          0.6317
+        ],
+        "overall.untyped.f1": [
+          0.7336,
+          0.7746
+        ],
+        "overall.untyped.precision": [
+          0.6402,
+          0.7
+        ],
+        "overall.untyped.recall": [
+          0.8465,
+          0.8784
+        ],
+        "per_type.ACCOUNT.exact.f1": [
+          0.0881,
+          0.1953
+        ],
+        "per_type.ACCOUNT.exact.precision": [
+          0.0701,
+          0.1546
+        ],
+        "per_type.ACCOUNT.exact.recall": [
+          0.1197,
+          0.2679
+        ],
+        "per_type.ACCOUNT.leak_rate": [
+          0.0524,
+          0.1322
+        ],
+        "per_type.ACCOUNT.overlap.f1": [
+          0.1056,
+          0.2133
+        ],
+        "per_type.ACCOUNT.overlap.precision": [
+          0.0842,
+          0.1706
+        ],
+        "per_type.ACCOUNT.overlap.recall": [
+          0.1429,
+          0.2946
+        ],
+        "per_type.ACCOUNT.untyped_recall": [
+          0.898,
+          0.9833
+        ],
+        "per_type.ADDRESS.exact.f1": [
+          0.0,
+          0.0
+        ],
+        "per_type.ADDRESS.exact.precision": [
+          0.0,
+          0.0
+        ],
+        "per_type.ADDRESS.exact.recall": [
+          0.0,
+          0.0
+        ],
+        "per_type.ADDRESS.leak_rate": [
+          0.429,
+          0.5073
+        ],
+        "per_type.ADDRESS.overlap.f1": [
+          0.5298,
+          0.6853
+        ],
+        "per_type.ADDRESS.overlap.precision": [
+          0.5738,
+          0.7692
+        ],
+        "per_type.ADDRESS.overlap.recall": [
+          0.4742,
+          0.6566
+        ],
+        "per_type.ADDRESS.untyped_recall": [
+          0.9196,
+          0.9909
+        ],
+        "per_type.CARD.exact.f1": [
+          0.5918,
+          0.8132
+        ],
+        "per_type.CARD.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.exact.recall": [
+          0.4203,
+          0.6852
+        ],
+        "per_type.CARD.leak_rate": [
+          0.1065,
+          0.3225
+        ],
+        "per_type.CARD.overlap.f1": [
+          0.5918,
+          0.8132
+        ],
+        "per_type.CARD.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.overlap.recall": [
+          0.4203,
+          0.6852
+        ],
+        "per_type.CARD.untyped_recall": [
+          0.7419,
+          0.9333
+        ],
+        "per_type.DOB.exact.f1": [
+          0.1454,
+          0.2037
+        ],
+        "per_type.DOB.exact.precision": [
+          0.0784,
+          0.1134
+        ],
+        "per_type.DOB.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.DOB.overlap.f1": [
+          0.1454,
+          0.2037
+        ],
+        "per_type.DOB.overlap.precision": [
+          0.0784,
+          0.1134
+        ],
+        "per_type.DOB.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.exact.recall": [
+          0.0,
+          0.0
+        ],
+        "per_type.EIN.leak_rate": [
+          0.2185,
+          0.3717
+        ],
+        "per_type.EIN.overlap.recall": [
+          0.0,
+          0.0
+        ],
+        "per_type.EIN.untyped_recall": [
+          0.7363,
+          0.9032
+        ],
+        "per_type.EMAIL.exact.f1": [
+          0.9074,
+          0.9579
+        ],
+        "per_type.EMAIL.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.exact.recall": [
+          0.8306,
+          0.9193
+        ],
+        "per_type.EMAIL.leak_rate": [
+          0.0262,
+          0.0631
+        ],
+        "per_type.EMAIL.overlap.f1": [
+          0.9074,
+          0.9579
+        ],
+        "per_type.EMAIL.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.overlap.recall": [
+          0.8306,
+          0.9193
+        ],
+        "per_type.EMAIL.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.PERSON.exact.f1": [
+          0.5137,
+          0.5785
+        ],
+        "per_type.PERSON.exact.precision": [
+          0.4964,
+          0.5635
+        ],
+        "per_type.PERSON.exact.recall": [
+          0.5256,
+          0.5988
+        ],
+        "per_type.PERSON.leak_rate": [
+          0.1974,
+          0.2623
+        ],
+        "per_type.PERSON.overlap.f1": [
+          0.6219,
+          0.6786
+        ],
+        "per_type.PERSON.overlap.precision": [
+          0.6075,
+          0.6686
+        ],
+        "per_type.PERSON.overlap.recall": [
+          0.6264,
+          0.6993
+        ],
+        "per_type.PERSON.untyped_recall": [
+          0.748,
+          0.8144
+        ],
+        "per_type.PHONE.exact.f1": [
+          0.6094,
+          0.6916
+        ],
+        "per_type.PHONE.exact.precision": [
+          0.4984,
+          0.5836
+        ],
+        "per_type.PHONE.exact.recall": [
+          0.7629,
+          0.8713
+        ],
+        "per_type.PHONE.leak_rate": [
+          0.103,
+          0.2002
+        ],
+        "per_type.PHONE.overlap.f1": [
+          0.6094,
+          0.6916
+        ],
+        "per_type.PHONE.overlap.precision": [
+          0.4984,
+          0.5836
+        ],
+        "per_type.PHONE.overlap.recall": [
+          0.7629,
+          0.8713
+        ],
+        "per_type.PHONE.untyped_recall": [
+          0.8238,
+          0.9176
+        ],
+        "per_type.ROUTING.exact.recall": [
+          0.0,
+          0.0
+        ],
+        "per_type.ROUTING.leak_rate": [
+          0.0435,
+          0.1509
+        ],
+        "per_type.ROUTING.overlap.recall": [
+          0.0,
+          0.0
+        ],
+        "per_type.ROUTING.untyped_recall": [
+          0.8545,
+          0.96
+        ],
+        "per_type.SSN.exact.f1": [
+          0.3506,
+          0.4765
+        ],
+        "per_type.SSN.exact.precision": [
+          0.2453,
+          0.3587
+        ],
+        "per_type.SSN.exact.recall": [
+          0.5638,
+          0.7451
+        ],
+        "per_type.SSN.leak_rate": [
+          0.2037,
+          0.3691
+        ],
+        "per_type.SSN.overlap.f1": [
+          0.3506,
+          0.4765
+        ],
+        "per_type.SSN.overlap.precision": [
+          0.2453,
+          0.3587
+        ],
+        "per_type.SSN.overlap.recall": [
+          0.5638,
+          0.7451
+        ],
+        "per_type.SSN.untyped_recall": [
+          0.633,
+          0.7981
+        ]
+      },
+      "decoy_masked_by_kind": {
+        "AMOUNT": 0.0034928396786587496,
+        "CUSIP": 0.5704225352112676,
+        "DATE": 1.0,
+        "FIN_TERM": 0.12631879098944968,
+        "FORM": 0.301517571884984,
+        "PERCENT": 0.0,
+        "YEAR": 0.8368536052439912
+      },
+      "n_docs": 420,
+      "overall": {
+        "decoy_masked_rate": 0.3994702157901538,
+        "exact": {
+          "f1": 0.3413031575104946,
+          "n_gold": 1750.0,
+          "n_pred": 3729.0,
+          "precision": 0.25073746312684364,
+          "recall": 0.5342857142857143
+        },
+        "leak_rate": 0.19938189107918478,
+        "overlap": {
+          "f1": 0.3938082567914808,
+          "n_gold": 1750.0,
+          "n_pred": 3729.0,
+          "precision": 0.29069455618128187,
+          "recall": 0.6102857142857143
+        },
+        "untyped": {
+          "f1": 0.7550724000703225,
+          "n_gold": 1750.0,
+          "n_pred": 3729.0,
+          "precision": 0.6712255296326093,
+          "recall": 0.8628571428571429
+        }
+      },
+      "per_type": {
+        "ACCOUNT": {
+          "exact": {
+            "f1": 0.1396825396825397,
+            "n_gold": 116.0,
+            "n_pred": 199.0,
+            "precision": 0.11055276381909548,
+            "recall": 0.1896551724137931
+          },
+          "leak_rate": 0.0872,
+          "overlap": {
+            "f1": 0.15873015873015872,
+            "n_gold": 116.0,
+            "n_pred": 199.0,
+            "precision": 0.12562814070351758,
+            "recall": 0.21551724137931033
+          },
+          "untyped_recall": 0.9482758620689655
+        },
+        "ADDRESS": {
+          "exact": {
+            "f1": 0.0,
+            "n_gold": 115.0,
+            "n_pred": 107.0,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "leak_rate": 0.46835795929746304,
+          "overlap": {
+            "f1": 0.61437479488021,
+            "n_gold": 115.0,
+            "n_pred": 107.0,
+            "precision": 0.6728971962616822,
+            "recall": 0.5652173913043478
+          },
+          "untyped_recall": 0.9565217391304348
+        },
+        "CARD": {
+          "exact": {
+            "f1": 0.717391304347826,
+            "n_gold": 59.0,
+            "n_pred": 33.0,
+            "precision": 1.0,
+            "recall": 0.559322033898305
+          },
+          "leak_rate": 0.20630081300813008,
+          "overlap": {
+            "f1": 0.717391304347826,
+            "n_gold": 59.0,
+            "n_pred": 33.0,
+            "precision": 1.0,
+            "recall": 0.559322033898305
+          },
+          "untyped_recall": 0.847457627118644
+        },
+        "DOB": {
+          "exact": {
+            "f1": 0.17527675276752766,
+            "n_gold": 95.0,
+            "n_pred": 989.0,
+            "precision": 0.09605662285136501,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 0.17527675276752766,
+            "n_gold": 95.0,
+            "n_pred": 989.0,
+            "precision": 0.09605662285136501,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "EIN": {
+          "exact": {
+            "f1": null,
+            "n_gold": 84.0,
+            "n_pred": 0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "leak_rate": 0.29404761904761906,
+          "overlap": {
+            "f1": null,
+            "n_gold": 84.0,
+            "n_pred": 0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "untyped_recall": 0.8214285714285714
+        },
+        "EMAIL": {
+          "exact": {
+            "f1": 0.9346246973365617,
+            "n_gold": 220.0,
+            "n_pred": 193.0,
+            "precision": 1.0,
+            "recall": 0.8772727272727273
+          },
+          "leak_rate": 0.044237012987012984,
+          "overlap": {
+            "f1": 0.9346246973365617,
+            "n_gold": 220.0,
+            "n_pred": 193.0,
+            "precision": 1.0,
+            "recall": 0.8772727272727273
+          },
+          "untyped_recall": 1.0
+        },
+        "PERSON": {
+          "exact": {
+            "f1": 0.5465465465465466,
+            "n_gold": 646.0,
+            "n_pred": 686.0,
+            "precision": 0.5306122448979592,
+            "recall": 0.5634674922600619
+          },
+          "leak_rate": 0.22928795342588446,
+          "overlap": {
+            "f1": 0.6510337085659048,
+            "n_gold": 646.0,
+            "n_pred": 686.0,
+            "precision": 0.6384839650145773,
+            "recall": 0.6640866873065016
+          },
+          "untyped_recall": 0.781733746130031
+        },
+        "PHONE": {
+          "exact": {
+            "f1": 0.6504065040650406,
+            "n_gold": 196.0,
+            "n_pred": 296.0,
+            "precision": 0.5405405405405406,
+            "recall": 0.8163265306122449
+          },
+          "leak_rate": 0.15185648727576137,
+          "overlap": {
+            "f1": 0.6504065040650406,
+            "n_gold": 196.0,
+            "n_pred": 296.0,
+            "precision": 0.5405405405405406,
+            "recall": 0.8163265306122449
+          },
+          "untyped_recall": 0.8724489795918368
+        },
+        "ROUTING": {
+          "exact": {
+            "f1": null,
+            "n_gold": 116.0,
+            "n_pred": 0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "leak_rate": 0.09195402298850575,
+          "overlap": {
+            "f1": null,
+            "n_gold": 116.0,
+            "n_pred": 0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "untyped_recall": 0.9137931034482759
+        },
+        "SSN": {
+          "exact": {
+            "f1": 0.4133738601823709,
+            "n_gold": 103.0,
+            "n_pred": 226.0,
+            "precision": 0.3008849557522124,
+            "recall": 0.6601941747572816
+          },
+          "leak_rate": 0.2833186231244484,
+          "overlap": {
+            "f1": 0.4133738601823709,
+            "n_gold": 103.0,
+            "n_pred": 226.0,
+            "precision": 0.3008849557522124,
+            "recall": 0.6601941747572816
+          },
+          "untyped_recall": 0.7184466019417476
+        }
+      },
+      "slices": {
+        "fin_term_name": {
+          "leak_rate": 0.3635719347980156,
+          "n": 183,
+          "untyped_recall": 0.6666666666666666
+        },
+        "first_name_only": {
+          "leak_rate": 0.3934740882917466,
+          "n": 103,
+          "untyped_recall": 0.6116504854368932
+        },
+        "fullwidth": {
+          "leak_rate": 0.4120734908136483,
+          "n": 69,
+          "untyped_recall": 0.6086956521739131
+        },
+        "lookalike_dash": {
+          "leak_rate": 0.5710227272727273,
+          "n": 29,
+          "untyped_recall": 0.4827586206896552
+        },
+        "lookalike_space": {
+          "leak_rate": 0.5088757396449705,
+          "n": 12,
+          "untyped_recall": 0.75
+        },
+        "lowercase_name": {
+          "leak_rate": 0.837037037037037,
+          "n": 21,
+          "untyped_recall": 0.19047619047619047
+        },
+        "name_in_email": {
+          "leak_rate": 0.05212687484632407,
+          "n": 185,
+          "untyped_recall": 1.0
+        },
+        "plain": {
+          "leak_rate": 0.15512465373961218,
+          "n": 960,
+          "untyped_recall": 0.9677083333333333
+        },
+        "pw_redact_core:*": {
+          "leak_rate": 0.6993865030674846,
+          "n": 12,
+          "untyped_recall": 0.4166666666666667
+        },
+        "street_only": {
+          "leak_rate": 0.6917808219178082,
+          "n": 9,
+          "untyped_recall": 0.6666666666666666
+        },
+        "title_name": {
+          "leak_rate": 0.10626992561105207,
+          "n": 133,
+          "untyped_recall": 0.8872180451127819
+        },
+        "uppercase_name": {
+          "leak_rate": 0.7194570135746606,
+          "n": 53,
+          "untyped_recall": 0.32075471698113206
+        },
+        "zero_width": {
+          "leak_rate": 0.34651290499725423,
+          "n": 126,
+          "untyped_recall": 0.7380952380952381
+        }
+      }
+    },
+    "regex": {
+      "bootstrap": {
+        "resamples": 1000,
+        "seed": 0,
+        "unit": "document"
+      },
+      "ci95": {
+        "decoy_masked_by_kind.AMOUNT": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.CUSIP": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.DATE": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.FIN_TERM": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.FORM": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.PERCENT": [
+          0.0,
+          0.0
+        ],
+        "decoy_masked_by_kind.YEAR": [
+          0.0,
+          0.0
+        ],
+        "overall.decoy_masked_rate": [
+          0.0,
+          0.0
+        ],
+        "overall.exact.f1": [
+          0.831,
+          0.8631
+        ],
+        "overall.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "overall.exact.recall": [
+          0.7108,
+          0.7592
+        ],
+        "overall.leak_rate": [
+          0.1912,
+          0.2345
+        ],
+        "overall.overlap.f1": [
+          0.831,
+          0.8631
+        ],
+        "overall.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "overall.overlap.recall": [
+          0.7108,
+          0.7592
+        ],
+        "overall.untyped.f1": [
+          0.831,
+          0.8631
+        ],
+        "overall.untyped.precision": [
+          1.0,
+          1.0
+        ],
+        "overall.untyped.recall": [
+          0.7108,
+          0.7592
+        ],
+        "per_type.ACCOUNT.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.ACCOUNT.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.ACCOUNT.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ACCOUNT.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.ACCOUNT.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.ACCOUNT.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.ACCOUNT.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ACCOUNT.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.ADDRESS.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ADDRESS.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.CARD.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.CARD.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.DOB.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.DOB.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.EIN.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EIN.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.EMAIL.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.EMAIL.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.PERSON.exact.f1": [
+          0.3991,
+          0.4856
+        ],
+        "per_type.PERSON.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.PERSON.exact.recall": [
+          0.2493,
+          0.3206
+        ],
+        "per_type.PERSON.leak_rate": [
+          0.7249,
+          0.7956
+        ],
+        "per_type.PERSON.overlap.f1": [
+          0.3991,
+          0.4856
+        ],
+        "per_type.PERSON.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.PERSON.overlap.recall": [
+          0.2493,
+          0.3206
+        ],
+        "per_type.PERSON.untyped_recall": [
+          0.2493,
+          0.3206
+        ],
+        "per_type.PHONE.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.PHONE.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.PHONE.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.PHONE.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.PHONE.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.PHONE.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.PHONE.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.PHONE.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.ROUTING.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.ROUTING.untyped_recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.exact.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.exact.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.exact.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.leak_rate": [
+          0.0,
+          0.0
+        ],
+        "per_type.SSN.overlap.f1": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.overlap.precision": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.overlap.recall": [
+          1.0,
+          1.0
+        ],
+        "per_type.SSN.untyped_recall": [
+          1.0,
+          1.0
+        ]
+      },
+      "decoy_masked_by_kind": {
+        "AMOUNT": 0.0,
+        "CUSIP": 0.0,
+        "DATE": 0.0,
+        "FIN_TERM": 0.0,
+        "FORM": 0.0,
+        "PERCENT": 0.0,
+        "YEAR": 0.0
+      },
+      "n_docs": 420,
+      "overall": {
+        "decoy_masked_rate": 0.0,
+        "exact": {
+          "f1": 0.847167325428195,
+          "n_gold": 1750.0,
+          "n_pred": 1286.0,
+          "precision": 1.0,
+          "recall": 0.7348571428571429
+        },
+        "leak_rate": 0.21345639826261276,
+        "overlap": {
+          "f1": 0.847167325428195,
+          "n_gold": 1750.0,
+          "n_pred": 1286.0,
+          "precision": 1.0,
+          "recall": 0.7348571428571429
+        },
+        "untyped": {
+          "f1": 0.847167325428195,
+          "n_gold": 1750.0,
+          "n_pred": 1286.0,
+          "precision": 1.0,
+          "recall": 0.7348571428571429
+        }
+      },
+      "per_type": {
+        "ACCOUNT": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 116.0,
+            "n_pred": 116.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 116.0,
+            "n_pred": 116.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "ADDRESS": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 115.0,
+            "n_pred": 115.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 115.0,
+            "n_pred": 115.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "CARD": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 59.0,
+            "n_pred": 59.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 59.0,
+            "n_pred": 59.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "DOB": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 95.0,
+            "n_pred": 95.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 95.0,
+            "n_pred": 95.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "EIN": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 84.0,
+            "n_pred": 84.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 84.0,
+            "n_pred": 84.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "EMAIL": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 220.0,
+            "n_pred": 220.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 220.0,
+            "n_pred": 220.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "PERSON": {
+          "exact": {
+            "f1": 0.4396135265700483,
+            "n_gold": 646.0,
+            "n_pred": 182.0,
+            "precision": 1.0,
+            "recall": 0.28173374613003094
+          },
+          "leak_rate": 0.7629496939841768,
+          "overlap": {
+            "f1": 0.4396135265700483,
+            "n_gold": 646.0,
+            "n_pred": 182.0,
+            "precision": 1.0,
+            "recall": 0.28173374613003094
+          },
+          "untyped_recall": 0.28173374613003094
+        },
+        "PHONE": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 196.0,
+            "n_pred": 196.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 196.0,
+            "n_pred": 196.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "ROUTING": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 116.0,
+            "n_pred": 116.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 116.0,
+            "n_pred": 116.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        },
+        "SSN": {
+          "exact": {
+            "f1": 1.0,
+            "n_gold": 103.0,
+            "n_pred": 103.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "leak_rate": 0.0,
+          "overlap": {
+            "f1": 1.0,
+            "n_gold": 103.0,
+            "n_pred": 103.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "untyped_recall": 1.0
+        }
+      },
+      "slices": {
+        "fin_term_name": {
+          "leak_rate": 0.8029766123316796,
+          "n": 183,
+          "untyped_recall": 0.25136612021857924
+        },
+        "first_name_only": {
+          "leak_rate": 1.0,
+          "n": 103,
+          "untyped_recall": 0.0
+        },
+        "fullwidth": {
+          "leak_rate": 0.0,
+          "n": 69,
+          "untyped_recall": 1.0
+        },
+        "lookalike_dash": {
+          "leak_rate": 0.0,
+          "n": 29,
+          "untyped_recall": 1.0
+        },
+        "lookalike_space": {
+          "leak_rate": 0.0,
+          "n": 12,
+          "untyped_recall": 1.0
+        },
+        "lowercase_name": {
+          "leak_rate": 1.0,
+          "n": 21,
+          "untyped_recall": 0.0
+        },
+        "name_in_email": {
+          "leak_rate": 0.0,
+          "n": 185,
+          "untyped_recall": 1.0
+        },
+        "plain": {
+          "leak_rate": 0.21812628737836495,
+          "n": 960,
+          "untyped_recall": 0.7645833333333333
+        },
+        "pw_redact_core:*": {
+          "leak_rate": 0.0,
+          "n": 12,
+          "untyped_recall": 1.0
+        },
+        "street_only": {
+          "leak_rate": 0.0,
+          "n": 9,
+          "untyped_recall": 1.0
+        },
+        "title_name": {
+          "leak_rate": 0.0,
+          "n": 133,
+          "untyped_recall": 1.0
+        },
+        "uppercase_name": {
+          "leak_rate": 0.755656108597285,
+          "n": 53,
+          "untyped_recall": 0.24528301886792453
+        },
+        "zero_width": {
+          "leak_rate": 0.0,
+          "n": 126,
+          "untyped_recall": 1.0
+        }
+      }
+    }
+  }
+}

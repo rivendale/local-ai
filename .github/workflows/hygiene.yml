@@ -1,0 +1,19 @@
+# The shared hygiene check from rivendale/opensource (tools/hygiene/README.md there):
+# executable bits, invisible characters, stale dated markers in the docs, and the
+# bake-off's offline checks run as root in a throwaway container with no network.
+# .hygiene.json configures it. To move to a newer version, change both SHAs in one commit.
+name: hygiene
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    uses: rivendale/opensource/.github/workflows/hygiene.yml@bd93f38385536fa29060ca10975522a88183312c
+    with:
+      hygiene_ref: bd93f38385536fa29060ca10975522a88183312c

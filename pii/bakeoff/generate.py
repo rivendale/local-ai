@@ -45,13 +45,16 @@ GOLD_TYPES = (
     "PERSON", "SSN", "EIN", "ACCOUNT", "ROUTING", "CARD",
     "PHONE", "EMAIL", "ADDRESS", "DOB",
 )
-# Decoy kinds: text that looks like PII to a pattern but is not personal.
+# Decoy kinds: text a pattern can mistake for PII but that is not personal.
 DECOY_KINDS = ("CUSIP", "FORM", "PERCENT", "AMOUNT", "DATE", "YEAR", "FIN_TERM")
 
 # Look-alike characters, written as escapes on purpose.
 LOOKALIKE_DASHES = ("\u2010", "\u2011", "\u2012", "\u2013", "\u2014", "\u2015", "\u2212")
 LOOKALIKE_SPACES = ("\u00a0", "\u202f", "\u2009")
 EN_DASH = "\u2013"
+# Bidi embedding, override and isolate controls: invisible, and they reorder
+# what a reader sees without changing what a pattern matches on.
+BIDI = ("\u202a", "\u202b", "\u202c", "\u202d", "\u202e", "\u2066", "\u2067", "\u2068", "\u2069")
 ZERO_WIDTH = ("\u200b", "\u200c", "\u200d", "\u2060", "\ufeff", "\u00ad")
 
 FIRST_NAMES = (
@@ -248,7 +251,7 @@ def make_address(rng: Rng, with_city: bool = True) -> str:
 def make_cusip(rng: Rng) -> str:
     alnum = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ"
     if rng.chance(0.5):
-        base = rng.digits(8)  # all-digit CUSIPs look like SSNs or routing numbers
+        base = rng.digits(8)  # all-digit CUSIP decoys share the shape of SSNs and routing numbers
     else:
         base = rng.digits(3) + "".join(rng.pick(alnum) for _ in range(3)) + rng.pick(alnum) + rng.digits(1)
     return base + cusip_check_digit(base)
@@ -657,6 +660,23 @@ def pw_regression_doc(rng: Rng, doc: Doc, case: tuple[str, str, str]) -> None:
     doc.text(".\n")
 
 
+def bidi_doc(rng: Rng, doc: Doc, variant: int) -> None:
+    """Bidi control characters hidden inside values (tag ``bidi``)."""
+    if variant == 0:
+        v = make_ssn(rng)
+        doc.text("SSN on file: ")
+        doc.gold(v[:4] + "\u202e" + v[4:], "SSN", ["bidi"])
+    elif variant == 1:
+        doc.text("Card ")
+        c = group_card(rng.pick(TEST_CARDS[:6]), " ")
+        doc.gold(c[:5] + "\u2066" + c[5:-5] + "\u2069" + c[-5:], "CARD", ["bidi"])
+    else:
+        p = Person(rng)
+        doc.text("Reply to ")
+        doc.gold(f"{p.first}.{p.last}".lower() + "\u202b@example.org", "EMAIL", ["bidi", "name_in_email"])
+    doc.text(".\n")
+
+
 def pw_allowlist_doc(rng: Rng, doc: Doc, variant: int) -> None:
     """Finance values pw-redact-core's tests require to survive redaction."""
     tag = "pw_redact_core:allowlist"
@@ -718,6 +738,13 @@ def generate(seed: int = DEFAULT_SEED, n_docs: int = DEFAULT_DOCS, hard_rate: fl
     for v in range(5):
         d = Doc(f"pw-allowlist-{v}", "pw_allowlist")
         pw_allowlist_doc(rng, d, v)
+        docs.append(d.to_json())
+    # Bidi cases use their own generator, so adding them left the other
+    # documents' values unchanged.
+    bidi_rng = Rng(seed + 1)
+    for v in range(3):
+        d = Doc(f"bidi-{v}", "bidi")
+        bidi_doc(bidi_rng, d, v)
         docs.append(d.to_json())
     weighted = [t for t in TEMPLATES for _ in range(t[2])]
     i = 0

@@ -5,9 +5,13 @@
 
 from __future__ import annotations
 
+import http.server
 import json
+import os
 import sys
+import threading
 import unittest
+from unittest import mock
 from pathlib import Path
 
 BAKEOFF = Path(__file__).resolve().parents[1]
@@ -51,7 +55,7 @@ class GeneratorTest(unittest.TestCase):
         kinds = {s["kind"] for d in docs for s in d["decoys"]}
         self.assertEqual(kinds, set(generate.DECOY_KINDS))
         tags = {t for d in docs for s in d["spans"] for t in s["tags"]}
-        for tag in ("lookalike_dash", "lookalike_space", "fullwidth", "zero_width", "fin_term_name", "name_in_email"):
+        for tag in ("lookalike_dash", "lookalike_space", "fullwidth", "zero_width", "bidi", "fin_term_name", "name_in_email"):
             self.assertIn(tag, tags)
         pw = {t for t in tags if t.startswith("pw_redact_core:")}
         self.assertEqual(len(pw), len(generate.PW_BYPASS_CASES))
@@ -109,6 +113,13 @@ class RegexBaselineTest(unittest.TestCase):
         self.assertIn(("SSN", "9\u200b01\u201102\u20110003"), got)
         self.assertIn(("CARD", "4111\u00a01111\u00a01111\u00a01111"), got)
 
+    def test_bidi_controls_are_dropped(self):
+        text = "SSN 901-\u202e02-0003, card 4111 \u20661111 1111\u2069 1111."
+        got = {(s["type"], text[s["start"]:s["end"]]) for s in regex_baseline.load().predict(text)}
+        self.assertIn(("SSN", "901-\u202e02-0003"), got)
+        self.assertIn(("CARD", "4111 \u20661111 1111\u2069 1111"), got)
+        self.assertEqual(self.result["slices"]["bidi"]["leak_rate"], 0.0)
+
     def test_pw_redact_core_bypass_cases_do_not_leak(self):
         self.assertEqual(self.result["slices"]["pw_redact_core:*"]["leak_rate"], 0.0)
 
@@ -124,7 +135,65 @@ class RegexBaselineTest(unittest.TestCase):
         self.assertAlmostEqual(self.result["overall"]["leak_rate"], committed["overall"]["leak_rate"], places=9)
 
 
+class _Server:
+    """A loopback HTTP server that records every path it is asked for."""
+
+    def __init__(self, redirect_to: str | None = None) -> None:
+        hits = self.hits = []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):  # noqa: N802 - http.server API
+                hits.append(self.path)
+                if redirect_to:
+                    self.send_response(302)
+                    self.send_header("Location", redirect_to + "/api/version")
+                    self.end_headers()
+                    return
+                body = json.dumps({"version": "test"}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args):
+                pass
+
+        self.httpd = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+        self.url = f"http://127.0.0.1:{self.httpd.server_address[1]}"
+        threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
+
+    def close(self) -> None:
+        self.httpd.shutdown()
+        self.httpd.server_close()
+
+
 class LocalLLMTest(unittest.TestCase):
+    def test_ignores_proxy_environment(self):
+        endpoint, proxy = _Server(), _Server()
+        try:
+            env = {"http_proxy": proxy.url, "HTTP_PROXY": proxy.url, "no_proxy": "", "NO_PROXY": ""}
+            with mock.patch.dict(os.environ, env):
+                adapter = local_llm.LocalLLM(model="m", endpoint=endpoint.url)
+            self.assertEqual(adapter.server_version, "test")
+            self.assertEqual(proxy.hits, [], "request went through http_proxy")
+            self.assertEqual(endpoint.hits, ["/api/version"])
+        finally:
+            endpoint.close()
+            proxy.close()
+
+    def test_refuses_redirects(self):
+        target = _Server()
+        redirector = _Server(redirect_to=target.url)
+        try:
+            with self.assertRaises(AdapterUnavailable):
+                local_llm.LocalLLM(model="m", endpoint=redirector.url)
+            self.assertEqual(redirector.hits, ["/api/version"])
+            self.assertEqual(target.hits, [], "redirect was followed")
+        finally:
+            target.close()
+            redirector.close()
+
     def test_locate_finds_exact_copies_only(self):
         text = "Dana Roth, 900-01-0001. Dana Roth again."
         spans = local_llm.locate(text, [{"type": "person", "value": "Dana Roth"}, {"type": "SSN", "value": "900 01 0001"}])

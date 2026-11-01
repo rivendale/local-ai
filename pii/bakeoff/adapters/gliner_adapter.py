@@ -15,9 +15,17 @@ Model ids, and how far each was checked on 2026-11-01:
 Pass ``revision`` (a Hugging Face commit SHA) to pin the weights; the runner
 records it. The adapter refuses to run without one, so a result is always
 tied to a known revision.
+
+Offline by default: unless ``allow_download=1`` is passed, the adapter sets
+``HF_HUB_OFFLINE=1`` and ``TRANSFORMERS_OFFLINE=1`` before importing GLiNER,
+so the weights must already be in the local Hugging Face cache. If
+``huggingface_hub`` was imported earlier with downloads on, it refuses to run.
 """
 
 from __future__ import annotations
+
+import os
+import sys
 
 from . import AdapterUnavailable, package_version
 
@@ -41,9 +49,17 @@ LABELS = {
 class GlinerAdapter:
     name = "gliner"
 
-    def __init__(self, model: str = DEFAULT_MODEL, revision: str | None = None, threshold: float = 0.5) -> None:
+    def __init__(self, model: str = DEFAULT_MODEL, revision: str | None = None, threshold: float = 0.5,
+                 allow_download: bool | str = False) -> None:
         if not revision:
             raise AdapterUnavailable("pass revision=<Hugging Face commit SHA> so the result names the weights it used")
+        self.allow_download = str(allow_download).lower() in ("1", "true", "yes")
+        if not self.allow_download:
+            os.environ["HF_HUB_OFFLINE"] = "1"
+            os.environ["TRANSFORMERS_OFFLINE"] = "1"
+            hub = sys.modules.get("huggingface_hub.constants")
+            if hub is not None and not getattr(hub, "HF_HUB_OFFLINE", False):
+                raise AdapterUnavailable("huggingface_hub was imported with downloads on; import this adapter first")
         try:
             from gliner import GLiNER
         except ImportError as exc:
@@ -52,7 +68,7 @@ class GlinerAdapter:
             self._model = GLiNER.from_pretrained(model, revision=revision)
         except Exception as exc:  # noqa: BLE001
             raise AdapterUnavailable(f"could not load {model}@{revision}: {exc}") from exc
-        self.model_id, self.revision, self.threshold = model, revision, threshold
+        self.model_id, self.revision, self.threshold = model, revision, float(threshold)
 
     def info(self) -> dict:
         return {
@@ -61,6 +77,7 @@ class GlinerAdapter:
             "model": self.model_id,
             "revision": self.revision,
             "threshold": self.threshold,
+            "hf_hub_offline": not self.allow_download,
             "labels": LABELS,
         }
 

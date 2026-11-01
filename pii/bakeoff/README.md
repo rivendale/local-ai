@@ -46,6 +46,10 @@ IRS's. [unverified]
 - Full-width digits (U+FF10 to U+FF19).
 - Zero-width and invisible characters inside numbers and emails: U+200B,
   U+200C, U+200D, U+2060, U+FEFF and the soft hyphen U+00AD.
+- Bidi control characters inside an SSN, a card number and an email: U+202E
+  (override), U+2066 and U+2069 (isolate), U+202B (embedding). Three
+  documents, tag `bidi`, drawn from their own seed so the other documents did
+  not change when they were added.
 - Names that are also finance words: Roth, Price, Bond, Rich, Cash, Banks,
   Sterling, Gold as surnames, and Penny, Rich, Sterling, Bond, Cash as given
   names, often in the same sentence as "Roth IRA" or "bond ladder".
@@ -53,8 +57,8 @@ IRS's. [unverified]
   First"), after an honorific, given name only, and inside an email address.
 
 **Decoys** are not personal information and should survive redaction: CUSIPs
-(with valid check digits, half of them all digits, so they look like SSNs or
-routing numbers), form numbers (Form 1040, Form 8949, 1099-B, Schedule D and
+(with valid check digits, half of them all digits, so a nine-digit pattern can
+mistake these decoys for SSNs or routing numbers), form numbers (Form 1040, Form 8949, 1099-B, Schedule D and
 others), percentages, dollar amounts, trade, filing and settlement dates, years
 and year ranges, and finance terms.
 
@@ -100,7 +104,10 @@ All offsets are Python string indices into the document text.
   section 1 of the [pii page](../README.md) recommends, leaves in clear. A
   detection that covers only the city of an address leaks the street.
 - **Decoys masked:** the share of decoy characters covered by any prediction.
-  This is over-redaction of finance data that a model downstream needs.
+  This is over-redaction of finance data that a model downstream needs. It is
+  also the only number here that exposes a detector that masks everything: a
+  single prediction spanning a whole document scores untyped precision and
+  recall of 1 and leaks nothing, and only its decoys-masked rate is high.
 - **Intervals:** 95% percentile bootstrap, 1,000 resamples of documents with
   replacement (seed 0). A document is the resampling unit, so spans in one
   document move together.
@@ -112,9 +119,9 @@ counterpart become `OTHER`, which counts against overall typed precision.
 
 | Adapter | What | Status, 2026-11-01 | Network default |
 |---|---|---|---|
-| `regex` | Written here. Canonicalizes look-alike and invisible characters first, checks Luhn and ABA checksums, needs a context word for routing, account and birth-date numbers. Names only after an honorific or in a `Name:` field. | **Run.** | None; standard library. |
-| `presidio` | [Presidio](https://github.com/data-privacy-stack/presidio) Analyzer [2.2.366](https://pypi.org/project/presidio-analyzer/2.2.366/) (PyPI, uploaded 2026-10-27, MIT) with spaCy [3.8.18](https://pypi.org/project/spacy/3.8.18/) (2026-10-26, MIT) and [`en_core_web_sm` 3.8.0](https://github.com/explosion/spacy-models/releases/tag/en_core_web_sm-3.8.0) (MIT per its package metadata; wheel sha256 `1932429d...0fb85`). Default recognizers, default threshold. | **Run**, inside `unshare -rn` (no network). | **Fetches the public suffix list on first use.** Its email recognizer calls tldextract 5.4.0, which tries publicsuffix.org, then raw.githubusercontent.com, and caches the list in `~/.cache/python-tldextract`. Seen in this run: the first URL was refused by the proxy and the second succeeded. The adapter sets `TLDEXTRACT_PUBLIC_SUFFIX_LIST_URLS=""`, which makes tldextract use its bundled snapshot (read from tldextract's `_suffix_list_urls_from_env`). |
-| `gliner` | [GLiNER](https://github.com/urchade/GLiNER) with a PII fine-tune. Default `urchade/gliner_multi_pii-v1`, which the GLiNER README names (commit `2dc5de2`, read 2026-11-01) and the [pii page](../README.md) read on Hugging Face on 2026-09-24. The same README names `knowledgator/gliner-stream-pii-v1.0`. `nvidia/gliner-PII` was seen only in web search results. [unverified: neither card read] | **Not run.** huggingface.co was refused by the session's proxy, so no weights could be downloaded. The adapter refuses to run without a pinned `revision`. | Downloads weights from Hugging Face on first load. |
+| `regex` | Written here. Canonicalizes look-alike, invisible and bidi control characters first, checks Luhn and ABA checksums, needs a context word for routing, account and birth-date numbers. Names only after an honorific or in a `Name:` field. | **Run.** | None; standard library. |
+| `presidio` | [Presidio](https://github.com/data-privacy-stack/presidio) Analyzer [2.2.366](https://pypi.org/project/presidio-analyzer/2.2.366/) (PyPI, uploaded 2026-10-27, MIT) with spaCy [3.8.18](https://pypi.org/project/spacy/3.8.18/) (2026-10-26, MIT) and [`en_core_web_sm` 3.8.0](https://github.com/explosion/spacy-models/releases/tag/en_core_web_sm-3.8.0) (MIT per its package metadata; wheel sha256 `1932429d...0fb85`). Default recognizers, default threshold. | **Run**, inside `unshare -rn` (no network). | **Fetches the public suffix list on first use.** Its email recognizer calls tldextract 5.4.0, which tries publicsuffix.org, then raw.githubusercontent.com, and caches the list in `~/.cache/python-tldextract`. Seen in an earlier networked attempt on 2026-11-01: the first URL was refused by the proxy and the second succeeded. The adapter sets `TLDEXTRACT_PUBLIC_SUFFIX_LIST_URLS=""` before tldextract is imported, which makes tldextract use its bundled snapshot, and refuses to run if tldextract's shared extractor still holds suffix list URLs. The variable first appears in tldextract 5.4.0 (2026-10-03); the 5.3.2 wheel does not read it (both wheels' code checked 2026-11-01), so older versions fetch regardless. |
+| `gliner` | [GLiNER](https://github.com/urchade/GLiNER) with a PII fine-tune. Default `urchade/gliner_multi_pii-v1`, which the GLiNER README names (commit `2dc5de2`, read 2026-11-01) and the [pii page](../README.md) read on Hugging Face on 2026-09-24. The same README names `knowledgator/gliner-stream-pii-v1.0`. `nvidia/gliner-PII` was seen only in web search results. [unverified: neither card read] | **Not run.** huggingface.co was refused by the session's proxy, so no weights could be downloaded. The adapter refuses to run without a pinned `revision`. | Downloads weights from Hugging Face on first load. The adapter sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` unless given `allow_download=1`, so by default the weights must already be cached. |
 | `openai_privacy_filter` | OpenAI Privacy Filter. The code repository [openai/privacy-filter](https://github.com/openai/privacy-filter) exists (commit `f7f00ca`, 2026-04-22, Apache-2.0 LICENSE). Its README says the weights are at `huggingface.co/openai/privacy-filter`, 1.5B parameters total and 50M active, with 8 labels: `account_number`, `private_address`, `private_email`, `private_person`, `private_phone`, `private_url`, `private_date`, `secret`. The weights, their size and revision were not checked. [unverified] | **Not run**: no access to huggingface.co. A 1.5B-parameter checkpoint is also likely over this run's 2 GB model budget [estimate from parameter count]. | **Downloads the checkpoint from Hugging Face if none is found** at `OPF_CHECKPOINT` or `~/.opf/privacy_filter` (its `opf/_common/checkpoint_download.py`). The adapter requires a local `checkpoint` directory. |
 | `local_llm` | A local model asked for every personal value, copied exactly, through Ollama's `/api/chat`. Offsets come from finding each copy in the text. | **Stub, not run**: no local endpoint was running. Accepts only a loopback endpoint. | Whatever the local runtime does; see [models](../../models/README.md). |
 

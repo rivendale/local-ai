@@ -175,10 +175,9 @@ Models," dated June 27, 2024 in the summaries. As summarized:
 ### 2026 Annual Regulatory Oversight Report (December 2025)
 
 FINRA's 2026 Annual Regulatory Oversight Report was released on December 9, 2025, per the
-summaries. No finra.org address for it appeared in the search results, so none is given here. Two
-of the summaries that did appear, neither opened: [Debevoise](https://www.debevoise.com/insights/publications/2025/12/finras-2026-regulatory-oversight-report-continued)
-and [Sidley](https://datamatters.sidley.com/2025/12/16/finra-issues-2026-regulatory-oversight-report/)
-(law firms, not finra.org). As summarized:
+summaries. No finra.org address for it appeared in the search results, so none is given here. One of
+the summaries that did appear, not opened: [Sidley](https://datamatters.sidley.com/2025/12/16/finra-issues-2026-regulatory-oversight-report/)
+(a law firm, not finra.org). As summarized:
 
 - It is described as the first edition with a standalone gen AI section, and the first to discuss
   **AI agents**: systems that can carry out and complete tasks on a user's behalf with some

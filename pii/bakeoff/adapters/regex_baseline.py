@@ -2,7 +2,7 @@
 
 Detection runs on a canonical copy of the text: look-alike dashes become
 ``-``, look-alike spaces become a space, full-width digits become ASCII
-digits, and zero-width or soft-hyphen characters are dropped. Offsets are
+digits, and zero-width, soft-hyphen and bidi control characters are dropped. Offsets are
 mapped back to the caller's text, so a span covers any hidden characters
 inside it. This follows the fix described in pw-redact-core's CHANGELOG
 (Unreleased, 2026-09-21).
@@ -22,7 +22,7 @@ import re
 
 DASHES = frozenset("\u2010\u2011\u2012\u2013\u2014\u2015\u2212\ufe58\ufe63\uff0d")
 SPACES = frozenset("\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000")
-INVISIBLE = frozenset("\u00ad\u200b\u200c\u200d\u200e\u200f\u2060\u2061\u2062\u2063\u2064\ufeff")
+INVISIBLE = frozenset("\u00ad\u200b\u200c\u200d\u200e\u200f\u2060\u2061\u2062\u2063\u2064\ufeff\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069")
 
 
 def canonicalize(text: str) -> tuple[str, list[int]]:

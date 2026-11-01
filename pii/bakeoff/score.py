@@ -13,7 +13,7 @@ Metrics, per entity type and overall:
 - **untyped overlap**: as overlap, ignoring type. This is what matters for
   masking, where the label does not change what is hidden.
 - **leaked characters**: of the visible characters inside gold spans
-  (whitespace and zero-width characters excluded), the share not covered by
+  (whitespace, zero-width and bidi control characters excluded), the share not covered by
   the union of all predicted spans, of any type. This is what a redactor that
   masks every predicted span leaves in clear.
 - **decoy over-redaction**: the share of decoy characters (CUSIPs, form
@@ -43,9 +43,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from generate import GOLD_TYPES, ZERO_WIDTH  # noqa: E402
+from generate import BIDI, GOLD_TYPES, ZERO_WIDTH  # noqa: E402
 
-INVISIBLE = frozenset(ZERO_WIDTH) | {"\u2060", "\u00ad"}
+INVISIBLE = frozenset(ZERO_WIDTH) | frozenset(BIDI) | {"\u2060", "\u00ad"}
 MODES = ("exact", "overlap", "untyped")
 
 
@@ -204,7 +204,7 @@ def slice_recall(gold_docs: list[dict], preds_by_id: dict[str, list[dict]]) -> d
     """Untyped overlap recall and leak rate for gold spans carrying each tag."""
     acc: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     for doc in gold_docs:
-        preds = preds_by_id.get(doc["id"], [])
+        preds = [p for p in preds_by_id.get(doc["id"], []) if p["end"] > p["start"]]
         text = doc["text"]
         for g in doc["spans"]:
             hit = any(_overlaps(g, p) for p in preds)
@@ -319,10 +319,49 @@ def self_check() -> list[str]:
     if r1["ci95"] != r2["ci95"]:
         fails.append("bootstrap is not reproducible with the same seed")
 
-    # 6. Duplicate predictions are not double counted.
+    # 6. Duplicate predictions are not double counted, true or false.
     dup = [{"start": 5, "end": 14, "type": "PERSON"}] * 3
     r = score([doc], {"t1": dup}, 0)
     expect("dedup precision", r["overall"]["exact"]["precision"], 1.0)
+    dup_fp = [{"start": 5, "end": 14, "type": "PERSON"}] + [{"start": 41, "end": 45, "type": "PERSON"}] * 2
+    r = score([doc], {"t1": dup_fp}, 0)
+    expect("dedup false positive n_pred", r["overall"]["exact"]["n_pred"], 2)
+    expect("dedup false positive precision", r["overall"]["exact"]["precision"], 0.5)
+
+    # 7. Adjacent is not overlapping: a prediction that starts where the name
+    #    ends and ends where the phone starts touches neither.
+    r = score([doc], {"t1": [{"start": 14, "end": 18, "type": "PERSON"}]}, 0)
+    expect("adjacent untyped recall", r["overall"]["untyped"]["recall"], 0.0)
+    expect("adjacent untyped precision", r["overall"]["untyped"]["precision"], 0.0)
+    expect("adjacent leak", r["overall"]["leak_rate"], 1.0)
+    expect("adjacent slice", r["slices"]["plain"]["untyped_recall"], 0.0)
+
+    # 8. Zero-length predictions are ignored everywhere, slices included.
+    r = score([doc], {"t1": [{"start": 7, "end": 7, "type": "PERSON"}]}, 0)
+    expect("zero-length recall", r["overall"]["untyped"]["recall"], 0.0)
+    expect("zero-length slice", r["slices"]["plain"]["untyped_recall"], 0.0)
+
+    # 9. The bootstrap equals an interval computed independently from the same
+    #    random draws, counting a document once per time it is drawn. Doc 0
+    #    has ten found spans, docs 1-9 one missed span each.
+    big = {"id": "m0", "text": "x" * 40, "decoys": [],
+           "spans": [{"start": 2 * i, "end": 2 * i + 1, "type": "SSN", "tags": []} for i in range(10)]}
+    small = [{"id": f"m{i}", "text": "y", "decoys": [], "spans": [{"start": 0, "end": 1, "type": "SSN", "tags": []}]}
+             for i in range(1, 10)]
+    mdocs = [big] + small
+    mpreds = {"m0": [dict(s) for s in big["spans"]]}
+    n_boot, seed = 300, 3
+    got = score(mdocs, mpreds, n_boot, seed)["ci95"]["overall.untyped.recall"]
+    hits = [10] + [0] * 9
+    golds = [10] + [1] * 9
+    rng = random.Random(seed)
+    vals = []
+    for _ in range(n_boot):
+        draws = [int(rng.random() * 10) % 10 for _ in range(10)]
+        vals.append(sum(hits[i] for i in draws) / sum(golds[i] for i in draws))
+    vals.sort()
+    want = [round(vals[int(0.025 * (n_boot - 1))], 4), round(vals[int(round(0.975 * (n_boot - 1)))], 4)]
+    expect("bootstrap interval", got, want)
     return fails
 
 

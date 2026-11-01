@@ -45,7 +45,10 @@ class OpenAIPrivacyFilter:
             from opf._api import OPF
         except ImportError as exc:
             raise AdapterUnavailable(f"opf is not installed: {exc}") from exc
-        self._opf = OPF(model=checkpoint, device=device, output_mode="typed")
+        try:
+            self._opf = OPF(model=checkpoint, device=device, output_mode="typed")
+        except Exception as exc:  # noqa: BLE001 - any load failure means unavailable
+            raise AdapterUnavailable(f"could not load the checkpoint at {checkpoint}: {exc}") from exc
         self.checkpoint = checkpoint
 
     def info(self) -> dict:

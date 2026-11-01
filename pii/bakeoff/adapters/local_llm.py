@@ -9,16 +9,30 @@ then finds each copy in the text to get offsets. A value the model rewrites
 as a miss, which is the honest outcome for a redactor built this way.
 
 Only a loopback endpoint is accepted, so a typo cannot send the dataset to a
-remote host.
+remote host. Requests ignore proxy environment variables (``http_proxy`` and
+the rest) and refuse redirects, so neither can route them elsewhere.
 """
 
 from __future__ import annotations
 
 import json
+import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 
 from . import AdapterUnavailable
+
+
+class RefuseRedirects(urllib.request.HTTPRedirectHandler):
+    """Refuse every redirect, so a reply cannot send the request to another host."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, f"redirect to {newurl} refused", headers, fp)
+
+
+def loopback_opener() -> urllib.request.OpenerDirector:
+    """An opener that ignores proxy settings (http_proxy and friends) and refuses redirects."""
+    return urllib.request.build_opener(urllib.request.ProxyHandler({}), RefuseRedirects())
 
 TYPES = ("PERSON", "SSN", "EIN", "ACCOUNT", "ROUTING", "CARD", "PHONE", "EMAIL", "ADDRESS", "DOB")
 
@@ -40,8 +54,9 @@ class LocalLLM:
         if host not in ("127.0.0.1", "localhost", "::1"):
             raise AdapterUnavailable(f"refusing non-loopback endpoint {endpoint}")
         self.model, self.endpoint, self.timeout = model, endpoint.rstrip("/"), timeout
+        self._opener = loopback_opener()
         try:
-            with urllib.request.urlopen(f"{self.endpoint}/api/version", timeout=5) as r:
+            with self._opener.open(f"{self.endpoint}/api/version", timeout=5) as r:
                 self.server_version = json.load(r).get("version")
         except Exception as exc:  # noqa: BLE001
             raise AdapterUnavailable(f"no endpoint at {self.endpoint}: {exc}") from exc
@@ -60,7 +75,7 @@ class LocalLLM:
             "options": {"temperature": 0, "seed": 0},
         }).encode()
         req = urllib.request.Request(f"{self.endpoint}/api/chat", data=body, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+        with self._opener.open(req, timeout=self.timeout) as r:
             content = json.load(r)["message"]["content"]
         try:
             items = json.loads(content).get("items", [])
